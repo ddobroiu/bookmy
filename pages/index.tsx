@@ -13,14 +13,33 @@ export default function Home() {
       <main>
       <Container>
         <section className="hero mt-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
+          <div className="grid md:grid-cols-2 gap-6 items-center">
+            <div className="space-y-4">
               <h1 className="text-3xl font-extrabold">Bookmy — Pagina de rezervări pentru afacerea ta</h1>
-              <p className="mt-3 text-muted">Creează rapid o pagină dedicată pentru salonul tău: servicii, program, contacte și rezervări.</p>
+              <p className="mt-3 text-muted">Alege tipul de cont și autentifică-te rapid.</p>
 
-              <div className="mt-6 flex gap-3">
-                <Link href="/dashboard/salons/new"><Button>Listează afacere</Button></Link>
-                <Link href="/auth/signin"><Button variant="outline">Cont client</Button></Link>
+              <div className="mt-6 grid sm:grid-cols-2 gap-4">
+                <div className="card p-4">
+                  <h3 className="font-semibold">Proprietar / Listează afacere</h3>
+                  <p className="text-sm muted mt-1">Dacă ai un salon și vrei să îți listezi afacerea.</p>
+                  <div className="mt-3">
+                    <Link href="/auth/signin?role=OWNER"><Button>Autentificare proprietar</Button></Link>
+                  </div>
+                  <div className="mt-2">
+                    <Link href="/auth/register?role=OWNER"><Button variant="outline">Creează cont proprietar</Button></Link>
+                  </div>
+                </div>
+
+                <div className="card p-4">
+                  <h3 className="font-semibold">Client / Caută salon</h3>
+                  <p className="text-sm muted mt-1">Cont pentru clienți care rezervă servicii.</p>
+                  <div className="mt-3">
+                    <Link href="/auth/signin?role=CUSTOMER"><Button>Autentificare client</Button></Link>
+                  </div>
+                  <div className="mt-2">
+                    <Link href="/auth/register?role=CUSTOMER"><Button variant="outline">Creează cont client</Button></Link>
+                  </div>
+                </div>
               </div>
             </div>
 

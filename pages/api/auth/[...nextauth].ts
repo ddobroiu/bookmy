@@ -22,8 +22,8 @@ export const authOptions: NextAuthOptions = {
         const bcrypt = (await import('bcryptjs')).default
         const valid = await bcrypt.compare(password, user.password)
         if (!valid) return null
-        // return user object for session
-        return { id: user.id, email: user.email, name: user.name }
+        // return user object for session (include role)
+        return { id: user.id, email: user.email, name: user.name, role: user.role }
       },
     }),
   ],

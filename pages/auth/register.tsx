@@ -12,13 +12,14 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [role, setRole] = useState<'CUSTOMER' | 'OWNER'>('CUSTOMER')
   const [status, setStatus] = useState<'idle' | 'sending' | 'error' | 'ok'>('idle')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStatus('sending')
     try {
-      const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name }) })
+      const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name, role }) })
       if (res.ok) {
         setStatus('ok')
         router.push('/auth/signin')
@@ -41,6 +42,13 @@ export default function RegisterPage() {
               <Input label="Nume" value={name} onChange={setName} placeholder="Numele tău" />
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
               <Input label="Parolă" value={password} onChange={setPassword} type="password" placeholder="••••••" />
+              <div>
+                <label className="block text-sm font-medium">Sunt:</label>
+                <div className="flex gap-4 mt-2">
+                  <label className="inline-flex items-center"><input type="radio" name="role" value="CUSTOMER" checked={role==='CUSTOMER'} onChange={() => setRole('CUSTOMER')} className="mr-2"/> Client (căutător)</label>
+                  <label className="inline-flex items-center"><input type="radio" name="role" value="OWNER" checked={role==='OWNER'} onChange={() => setRole('OWNER')} className="mr-2"/> Proprietar / Listează afacere</label>
+                </div>
+              </div>
               <div><Button>{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button></div>
             </form>
             {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}

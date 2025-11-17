@@ -4,10 +4,13 @@ import dynamic from 'next/dynamic'
 import Container from '../../components/Container'
 import Input from '../../components/Input'
 import Button from '../../components/Button'
+import { useRouter } from 'next/router'
 
 const Header = dynamic(() => import('../../components/Header'), { ssr: false })
 
 export default function SignInPage() {
+  const router = useRouter()
+  const { role: roleQuery } = router.query
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle')
@@ -17,7 +20,12 @@ export default function SignInPage() {
     setStatus('sending')
     const res = await signIn('credentials', { redirect: false, email, password })
     if (res?.ok) {
-      window.location.href = '/'
+      // Redirect based on role query (OWNER -> dashboard)
+      if (roleQuery === 'OWNER') {
+        window.location.href = '/dashboard'
+      } else {
+        window.location.href = '/'
+      }
     } else {
       setStatus('error')
     }

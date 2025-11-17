@@ -5,14 +5,16 @@ import { sendResendEmail } from '../../../lib/resend'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-  const { email, password, name } = req.body
+  const { email, password, name, role } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Missing email or password' })
+  const allowedRoles = ['CUSTOMER', 'OWNER']
+  const userRole = allowedRoles.includes(role) ? role : 'CUSTOMER'
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) return res.status(409).json({ error: 'User already exists' })
 
   const hashed = await bcrypt.hash(password, 10)
-  const user = await prisma.user.create({ data: { email, password: hashed, name } })
+  const user = await prisma.user.create({ data: { email, password: hashed, name, role: userRole } })
   // Send welcome email (do NOT include the password). If RESEND_API_KEY is not set, helper will throw.
   try {
     const from = process.env.EMAIL_FROM || 'no-reply@bookmy.ro'

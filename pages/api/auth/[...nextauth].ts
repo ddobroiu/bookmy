@@ -32,10 +32,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'database',
   },
-  pages: {
-    // use default pages; you can override with custom UI later
-    signIn: '/api/auth/signin',
-  },
+  // use default built-in pages; avoid pointing signIn to an API route (causes redirect loops)
 }
 
 export default NextAuth(authOptions)

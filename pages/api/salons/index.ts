@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session || !session.user) return res.status(401).json({ error: 'Unauthorized' })
 
   if (req.method === 'POST') {
-    const { name, slug, phone, address, description, images, socialLinks, openingHours } = req.body
+    const { name, slug, subdomain, phone, address, description, images, socialLinks, openingHours } = req.body
     if (!name || typeof name !== 'string') return res.status(400).json({ error: 'Missing name' })
 
     let baseSlug = slug && typeof slug === 'string' && slug.trim() !== '' ? toKebabCase(slug) : toKebabCase(name)
@@ -27,11 +27,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const ownerEmail = session.user.email ?? undefined
-
+    // handle optional subdomain
+    let finalSubdomain: string | null = null
+    if (subdomain && typeof subdomain === 'string' && subdomain.trim() !== '') {
+      const sub = toKebabCase(subdomain).replace(/[^a-z0-9-]/g, '')
+      // basic checks
+      if (sub.length < 2 || sub.length > 63) return res.status(400).json({ error: 'Invalid subdomain' })
+      const reserved = ['www','admin','api','mail','ftp','support','blog','shop']
+      if (reserved.includes(sub)) return res.status(400).json({ error: 'Reserved subdomain' })
+      // ensure uniqueness
+      const exists = await prisma.salon.findUnique({ where: { subdomain: sub } })
+      if (exists) return res.status(400).json({ error: 'Subdomain taken' })
+      finalSubdomain = sub
+    }
     const salon = await prisma.salon.create({
       data: {
         name,
         slug: baseSlug,
+        subdomain: finalSubdomain,
         phone: phone ?? null,
         address: address ?? null,
         description: description ?? null,

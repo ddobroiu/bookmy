@@ -22,6 +22,7 @@ model Salon {
   id         String    @id @default(cuid())
   name       String
   slug       String    @unique
+  subdomain  String?   @unique
   description String?
   phone      String?
   address    String?

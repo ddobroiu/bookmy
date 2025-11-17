@@ -1,12 +1,7 @@
-import { defineConfig, env } from "prisma/config";
+// Ensure environment variables from .env are loaded when Prisma loads this TS config
+import * as dotenv from 'dotenv'
+dotenv.config({ path: '.env' })
 
-export default defineConfig({
+export default {
   schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-  },
-  engine: "classic",
-  datasource: {
-    url: env("DATABASE_URL"),
-  },
-});
+}

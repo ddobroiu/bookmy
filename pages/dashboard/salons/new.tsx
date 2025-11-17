@@ -13,6 +13,7 @@ export default function NewSalon() {
 
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
+  const [subdomain, setSubdomain] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
   const [description, setDescription] = useState('')
@@ -27,6 +28,8 @@ export default function NewSalon() {
 
   const [checking, setChecking] = useState(false)
   const [suggestion, setSuggestion] = useState<string | null>(null)
+  const [subChecking, setSubChecking] = useState(false)
+  const [subAvailable, setSubAvailable] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!slug && name) setSlug(toKebabCase(name))
@@ -43,6 +46,20 @@ export default function NewSalon() {
       console.error(e)
     } finally {
       setChecking(false)
+    }
+  }
+
+  async function checkSubdomain(value: string) {
+    setSubChecking(true)
+    setSubAvailable(null)
+    try {
+      const res = await fetch(`/api/subdomain-check?subdomain=${encodeURIComponent(value)}`)
+      const data = await res.json()
+      setSubAvailable(!!data.ok)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSubChecking(false)
     }
   }
 
@@ -64,7 +81,7 @@ export default function NewSalon() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const payload = { name, slug, phone, address, description, images, socialLinks, openingHours }
+    const payload = { name, slug, subdomain, phone, address, description, images, socialLinks, openingHours }
     const res = await fetch('/api/salons', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,6 +119,17 @@ export default function NewSalon() {
                     <button type="button" onClick={() => setSlug(suggestion)} className="ml-2 text-blue-600">Folosește</button>
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium">Subdomeniu</label>
+                <div className="flex gap-2">
+                  <input value={subdomain} onChange={(e) => setSubdomain(e.target.value)} onBlur={() => checkSubdomain(subdomain)} className="flex-1 border border-gray-200 rounded-md px-3 py-2" placeholder="ex: salonul-tau" />
+                  <button type="button" onClick={() => setSubdomain(toKebabCase(name))} className="btn-outline px-3 py-2 rounded-md">Auto</button>
+                </div>
+                {subChecking && <p className="text-sm text-gray-500">Verific subdomeniu...</p>}
+                {subAvailable === true && <p className="text-sm text-green-600">Disponibil</p>}
+                {subAvailable === false && <p className="text-sm text-red-600">Indisponibil</p>}
               </div>
 
               <Input label="Telefon" value={phone} onChange={setPhone} placeholder="0740..." />

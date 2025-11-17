@@ -23,6 +23,9 @@ model Salon {
   description String?
   phone      String?
   address    String?
+  images     Json?
+  socialLinks Json?
+  openingHours Json?
   ownerId    String?
   owner      User?     @relation("OwnerSalons", fields: [ownerId], references: [id])
   services   Service[]

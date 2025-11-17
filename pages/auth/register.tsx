@@ -9,17 +9,18 @@ const Header = dynamic(() => import('../../components/Header'), { ssr: false })
 
 export default function RegisterPage() {
   const router = useRouter()
+  const roleFromQuery = (router.query.role as string) || 'CUSTOMER'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [role, setRole] = useState<'CUSTOMER' | 'OWNER'>('CUSTOMER')
+  const [showPassword, setShowPassword] = useState(false)
   const [status, setStatus] = useState<'idle' | 'sending' | 'error' | 'ok'>('idle')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStatus('sending')
     try {
-      const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name, role }) })
+      const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name, role: roleFromQuery }) })
       if (res.ok) {
         setStatus('ok')
         router.push('/auth/signin')
@@ -32,26 +33,49 @@ export default function RegisterPage() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <main className="mt-12">
+      <main className="flex-1 flex items-center justify-center py-12 px-4">
         <Container>
-          <div className="max-w-md mx-auto card">
-            <h1 className="text-2xl font-bold mb-2">Creează cont</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input label="Nume" value={name} onChange={setName} placeholder="Numele tău" />
-              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
-              <Input label="Parolă" value={password} onChange={setPassword} type="password" placeholder="••••••" />
-              <div>
-                <label className="block text-sm font-medium">Sunt:</label>
-                <div className="flex gap-4 mt-2">
-                  <label className="inline-flex items-center"><input type="radio" name="role" value="CUSTOMER" checked={role==='CUSTOMER'} onChange={() => setRole('CUSTOMER')} className="mr-2"/> Client (căutător)</label>
-                  <label className="inline-flex items-center"><input type="radio" name="role" value="OWNER" checked={role==='OWNER'} onChange={() => setRole('OWNER')} className="mr-2"/> Proprietar / Listează afacere</label>
+          <div className="max-w-md mx-auto">
+            <div className="bg-white shadow-lg rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">BM</div>
+                <div>
+                  <h1 className="text-2xl font-bold">Creează cont</h1>
+                  <p className="text-sm text-gray-500">Cont pentru {roleFromQuery === 'OWNER' ? 'proprietari' : 'clienți'}. Continuă cu datele tale.</p>
                 </div>
               </div>
-              <div><Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button></div>
-            </form>
-            {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" />
+                <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
+                <div>
+                  <label className="block">
+                    <div className="text-sm mb-1 font-medium">Parolă</div>
+                    <div className="relative">
+                      <input
+                        className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Alege o parolă sigură"
+                      />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-sm text-gray-500">{showPassword ? 'Ascunde' : 'Arată'}</button>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">Ai deja cont? <a href="/auth/signin" className="text-indigo-600">Autentifică-te</a></div>
+                  <div>
+                    <Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button>
+                  </div>
+                </div>
+              </form>
+
+              {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}
+            </div>
           </div>
         </Container>
       </main>

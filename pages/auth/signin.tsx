@@ -14,6 +14,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle')
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,7 +43,16 @@ export default function SignInPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
-              <Input label="Parolă" value={password} onChange={setPassword} type="password" placeholder="••••••" />
+              <div>
+                <label className="block">
+                  <div className="text-sm mb-1 font-medium">Parolă</div>
+                  <div className="relative">
+                    <input className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} placeholder="••••••" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-sm text-gray-500">{showPassword ? 'Ascunde' : 'Arată'}</button>
+                  </div>
+                </label>
+              </div>
+
               <div>
                 <Button type="submit">
                   {status === 'sending' ? 'Se autentifică...' : 'Autentificare'}

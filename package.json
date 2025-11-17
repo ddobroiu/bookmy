@@ -1,0 +1,29 @@
+{
+  "name": "bookmy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "prisma:generate": "prisma generate",
+    "studio": "prisma studio"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@prisma/client": "^6.19.0",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.5",
+    "autoprefixer": "latest",
+    "postcss": "latest",
+    "prisma": "^6.19.0",
+    "tailwindcss": "latest",
+    "typescript": "latest"
+  }
+}

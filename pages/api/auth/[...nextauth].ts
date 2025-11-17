@@ -1,5 +1,5 @@
 import NextAuth from 'next-auth'
-import EmailProvider from 'next-auth/providers/email'
+import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import prisma from '../../../lib/prisma'
 import type { NextAuthOptions } from 'next-auth'
@@ -8,25 +8,22 @@ import { sendResendEmail } from '../../../lib/resend'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma as any),
   providers: [
-    EmailProvider({
-      // For safety during development we replace actual email sending with a no-op logger.
-      // This prevents accidental outbound emails while you test authentication flows.
-      from: process.env.EMAIL_FROM,
-      async sendVerificationRequest(params: any) {
-        const { identifier: email, url } = params
-        const site = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-        // Log the verification link to server console (no external request)
-        console.log(`[NextAuth][DEV] Magic link for ${email}: ${url} (site: ${site})`)
-        // Additionally write to a file for easier local inspection (safe, optional)
-        try {
-          const fs = await import('fs')
-          const path = `./.next/magic-links.log`
-          const line = `${new Date().toISOString()}\t${email}\t${url}\n`
-          fs.appendFileSync(path, line)
-        } catch (e) {
-          // ignore file write errors in dev
-          console.debug('Could not write magic link to file:', e)
-        }
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials) return null
+        const { email, password } = credentials as { email: string; password: string }
+        const user = await prisma.user.findUnique({ where: { email } })
+        if (!user || !user.password) return null
+        const bcrypt = (await import('bcryptjs')).default
+        const valid = await bcrypt.compare(password, user.password)
+        if (!valid) return null
+        // return user object for session
+        return { id: user.id, email: user.email, name: user.name }
       },
     }),
   ],

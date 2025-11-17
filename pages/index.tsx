@@ -19,8 +19,8 @@ export default function Home() {
               <p className="mt-3 text-muted">Creează rapid o pagină dedicată pentru salonul tău: servicii, program, contacte și rezervări.</p>
 
               <div className="mt-6 flex gap-3">
-                <Link href="/dashboard/salons/new"><Button>Începe acum</Button></Link>
-                <Link href="/auth/signin"><Button variant="outline">Autentificare</Button></Link>
+                <Link href="/dashboard/salons/new"><Button>Listează afacere</Button></Link>
+                <Link href="/auth/signin"><Button variant="outline">Cont client</Button></Link>
               </div>
             </div>
 

@@ -37,32 +37,28 @@ export default function RegisterPage() {
     <div>
       <Header />
       <AuthCard title="Creează cont" subtitle={roleFromQuery === 'OWNER' ? 'Cont pentru proprietari' : 'Cont pentru clienți'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" />
-          <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
-          <div>
-            <label className="block">
-              <div className="text-sm mb-1 font-medium">Parolă</div>
-              <div className="relative">
-                <input
-                  className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Alege o parolă sigură"
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-sm text-gray-500">{showPassword ? 'Ascunde' : 'Arată'}</button>
-              </div>
-            </label>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" icon={<UserIcon className="w-5 h-5" />} />
+            <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<MailIcon className="w-5 h-5" />} />
+            <Input
+              label="Parolă"
+              value={password}
+              onChange={setPassword}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Alege o parolă sigură"
+              icon={<LockClosedIcon className="w-5 h-5" />}
+              className="mb-2"
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-xs text-indigo-500 mb-2 transition hover:underline">
+              {showPassword ? 'Ascunde parola' : 'Arată parola'}
+            </button>
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-500">Ai deja cont? <a href="/auth/signin" className="text-pink-600 font-semibold hover:underline">Autentifică-te</a></div>
+              <Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button>
+            </div>
+          </form>
 
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">Ai deja cont? <a href="/auth/signin" className="text-indigo-600">Autentifică-te</a></div>
-            <Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button>
-          </div>
-        </form>
-
-        {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}
+          {status === 'error' && <p className="mt-3 text-red-600 font-semibold">A apărut o eroare la înregistrare.</p>}
       </AuthCard>
     </div>
   )

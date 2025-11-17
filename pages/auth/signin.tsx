@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import dynamic from 'next/dynamic'
+import Container from '../../components/Container'
+import Input from '../../components/Input'
+import Button from '../../components/Button'
+
 const Header = dynamic(() => import('../../components/Header'), { ssr: false })
 
 export default function SignInPage() {
@@ -17,35 +21,26 @@ export default function SignInPage() {
   return (
     <div>
       <Header />
-      <main className="max-w-md mx-auto mt-12 bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Sign in</h1>
+      <main className="mt-12">
+        <Container>
+          <div className="max-w-md mx-auto card">
+            <h1 className="text-2xl font-bold mb-2">Autentificare</h1>
+            <p className="text-sm muted mb-4">Primești un link în email pentru autentificare.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block">
-            <span className="text-sm">Email</span>
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border rounded px-3 py-2"
-            />
-          </label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
+              <div>
+                <Button>
+                  {status === 'sending' ? 'Trimitere...' : 'Trimite magic link'}
+                </Button>
+              </div>
+            </form>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded"
-              disabled={status === 'sending'}
-            >
-              {status === 'sending' ? 'Sending...' : 'Send magic link'}
-            </button>
+            {status === 'sent' && (
+              <p className="mt-4 text-sm" style={{ color: 'var(--brand-700)' }}>Verifică emailul pentru linkul de autentificare.</p>
+            )}
           </div>
-        </form>
-
-        {status === 'sent' && (
-          <p className="mt-4 text-sm text-green-600">Check your email for the magic link.</p>
-        )}
+        </Container>
       </main>
     </div>
   )

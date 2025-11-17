@@ -4,6 +4,16 @@ import { useRouter } from 'next/router'
 import { toKebabCase } from '../../../lib/slug'
 const Header = dynamic(() => import('../../../components/Header'), { ssr: false })
 
+import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
+import { toKebabCase } from '../../../lib/slug'
+import Container from '../../../components/Container'
+import Input from '../../../components/Input'
+import Button from '../../../components/Button'
+
+const Header = dynamic(() => import('../../../components/Header'), { ssr: false })
+
 export default function NewSalon() {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -11,12 +21,6 @@ export default function NewSalon() {
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
   const [openingHours, setOpeningHours] = useState('')
-  const [description, setDescription] = useState('')
-  const [images, setImages] = useState<string[]>([])
-  const [newImage, setNewImage] = useState('')
-  const [socialLinks, setSocialLinks] = useState<Array<{ platform: string; url: string }>>([])
-  const [newSocialPlatform, setNewSocialPlatform] = useState('')
-  const [newSocialUrl, setNewSocialUrl] = useState('')
   const [checking, setChecking] = useState(false)
   const [suggestion, setSuggestion] = useState<string | null>(null)
 
@@ -42,7 +46,7 @@ export default function NewSalon() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const payload = { name, slug, phone, address, description, images, socialLinks, openingHours }
+    const payload = { name, slug, phone, address, openingHours }
     const res = await fetch('/api/salons', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,47 +63,39 @@ export default function NewSalon() {
   return (
     <div>
       <Header />
-      <main className="max-w-xl mx-auto mt-8 bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Create your salon</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block">
-            <span className="text-sm">Name</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" />
-          </label>
+      <main className="mt-8">
+        <Container>
+          <div className="max-w-2xl mx-auto card">
+            <h1 className="text-2xl font-bold mb-3">Creează salonul tău</h1>
+            <p className="text-sm muted mb-4">Completează informațiile de bază și publică pagina pentru clienți.</p>
 
-          <label className="block">
-            <span className="text-sm">Slug</span>
-            <div className="flex gap-2">
-              <input value={slug} onChange={(e) => setSlug(e.target.value)} onBlur={() => checkSlug(slug)} className="mt-1 block w-full border rounded px-3 py-2" />
-              <button type="button" onClick={() => setSlug(toKebabCase(name))} className="bg-gray-200 px-3 rounded">Auto</button>
-            </div>
-            {checking && <p className="text-sm text-gray-500">Checking slug...</p>}
-            {suggestion && <p className="text-sm text-yellow-600">Suggested: {suggestion} <button type="button" onClick={() => setSlug(suggestion)} className="ml-2 text-blue-600">Use</button></p>}
-          </label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input label="Nume salon" value={name} onChange={setName} placeholder="Numele salonului" />
 
-          <label className="block">
-            <span className="text-sm">Phone</span>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" />
-          </label>
+              <div>
+                <label className="block mb-1 text-sm font-medium">Slug</label>
+                <div className="flex gap-2">
+                  <input value={slug} onChange={(e) => setSlug(e.target.value)} onBlur={() => checkSlug(slug)} className="flex-1 border border-gray-200 rounded-md px-3 py-2" />
+                  <button type="button" onClick={() => setSlug(toKebabCase(name))} className="btn-outline px-3 py-2 rounded-md">Auto</button>
+                </div>
+                {checking && <p className="text-sm text-gray-500">Verific slug...</p>}
+                {suggestion && <p className="text-sm text-yellow-600">Sugestie: {suggestion} <button type="button" onClick={() => setSlug(suggestion)} className="ml-2 text-blue-600">Folosește</button></p>}
+              </div>
 
-          <label className="block">
-            <span className="text-sm">Address</span>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" />
-          </label>
+              <Input label="Telefon" value={phone} onChange={setPhone} placeholder="0740..." />
+              <Input label="Adresă" value={address} onChange={setAddress} placeholder="Strada, oraș" />
+              <Input label="Program (text)" value={openingHours} onChange={setOpeningHours} placeholder="Luni-Vineri 09:00-18:00" />
 
-          <label className="block">
-            <span className="text-sm">Opening hours (text)</span>
-            <input value={openingHours} onChange={(e) => setOpeningHours(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" />
-          </label>
-
-          <label className="block">
-            <span className="text-sm">Short description</span>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" rows={3} />
-          </label>
-
-          <label className="block">
-            <span className="text-sm">Images (paste image URL)</span>
-            <div className="flex gap-2 mt-1">
+              <div>
+                <Button>Creează salon</Button>
+              </div>
+            </form>
+          </div>
+        </Container>
+      </main>
+    </div>
+  )
+}
               <input value={newImage} onChange={(e) => setNewImage(e.target.value)} className="flex-1 border rounded px-3 py-2" placeholder="https://..." />
               <button type="button" onClick={() => {
                 if (newImage.trim()) { setImages((s) => [...s, newImage.trim()]); setNewImage('') }

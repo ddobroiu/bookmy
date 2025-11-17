@@ -49,7 +49,7 @@ export default function RegisterPage() {
                   <label className="inline-flex items-center"><input type="radio" name="role" value="OWNER" checked={role==='OWNER'} onChange={() => setRole('OWNER')} className="mr-2"/> Proprietar / Listează afacere</label>
                 </div>
               </div>
-              <div><Button>{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button></div>
+              <div><Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button></div>
             </form>
             {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}
           </div>

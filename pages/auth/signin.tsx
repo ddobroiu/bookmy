@@ -44,7 +44,7 @@ export default function SignInPage() {
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
               <Input label="Parolă" value={password} onChange={setPassword} type="password" placeholder="••••••" />
               <div>
-                <Button>
+                <Button type="submit">
                   {status === 'sending' ? 'Se autentifică...' : 'Autentificare'}
                 </Button>
               </div>

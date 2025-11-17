@@ -9,21 +9,23 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma as any),
   providers: [
     EmailProvider({
-      // we override sending below using Resend; keep `from` for clarity
+      // For safety during development we replace actual email sending with a no-op logger.
+      // This prevents accidental outbound emails while you test authentication flows.
       from: process.env.EMAIL_FROM,
-      // Custom send function: uses Resend API via lib/resend.ts
-      // NextAuth will call this to send the magic link email
       async sendVerificationRequest(params: any) {
-        const { identifier: email, url, provider } = params
-        const from = provider.from || process.env.EMAIL_FROM
+        const { identifier: email, url } = params
         const site = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-        const text = `Sign in to ${site}\n\nClick this link to sign in:\n${url}\n\nIf you did not request this, you can ignore this email.`
-        const html = `<p>Sign in to <strong>${site}</strong></p><p><a href="${url}" style="display:inline-block;padding:12px 18px;background:${process.env.BRAND_COLOR || '#0b7180'};color:#fff;border-radius:8px;text-decoration:none;">Sign in</a></p><p style="color:#6b7280;font-size:14px;margin-top:12px;">If you did not request this, you can ignore this email.</p>`
+        // Log the verification link to server console (no external request)
+        console.log(`[NextAuth][DEV] Magic link for ${email}: ${url} (site: ${site})`)
+        // Additionally write to a file for easier local inspection (safe, optional)
         try {
-          await sendResendEmail({ to: email, from, subject: `Your sign-in link for ${site}`, text, html })
-        } catch (err) {
-          console.error('Error sending verification email via Resend:', err)
-          throw err
+          const fs = await import('fs')
+          const path = `./.next/magic-links.log`
+          const line = `${new Date().toISOString()}\t${email}\t${url}\n`
+          fs.appendFileSync(path, line)
+        } catch (e) {
+          // ignore file write errors in dev
+          console.debug('Could not write magic link to file:', e)
         }
       },
     }),

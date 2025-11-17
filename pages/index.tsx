@@ -8,9 +8,9 @@ const Header = dynamic(() => import('../components/Header'), { ssr: false })
 
 export default function Home() {
   return (
-    <div>
+    <div className="bg-gray-50 min-h-screen flex flex-col">
       <Header />
-      <main>
+      <main className="flex-1">
         <Container>
           <section className="hero mt-8">
             <div className="rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1 shadow-2xl animate-fadein">
@@ -77,9 +77,9 @@ export default function Home() {
             <p className="mt-2 text-sm text-gray-500">Pentru a inspecta baza de date locală rulează <code className="bg-gray-100 px-2 py-1 rounded">npx prisma studio</code>.</p>
           </section>
 
-          <Footer />
         </Container>
       </main>
+      <Footer />
       <style jsx>{`
         .animate-fadein { animation: fadein 1s ease; }
         .animate-card { animation: cardin 0.7s cubic-bezier(.4,0,.2,1); }

@@ -7,7 +7,7 @@ import Input from '../../components/Input'
 import Button from '../../components/Button'
 import { useRouter } from 'next/router'
 import AuthCard from '../../components/AuthCard'
-import { MailIcon, LockClosedIcon } from '@heroicons/react/solid'
+import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/solid'
 
 const Header = dynamic(() => import('../../components/Header'), { ssr: false })
 
@@ -40,7 +40,7 @@ export default function SignInPage() {
       <Header />
       <AuthCard title="Autentificare" subtitle="Conectează-te cu email și parolă">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<MailIcon className="w-5 h-5" />} />
+          <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<EnvelopeIcon className="w-5 h-5" />} />
           <Input
             label="Parolă"
             value={password}

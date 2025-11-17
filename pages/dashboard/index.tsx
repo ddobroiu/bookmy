@@ -1,7 +1,8 @@
 import { GetServerSideProps } from 'next'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../api/auth/[...nextauth]'
-import Header from '../../components/Header'
+import dynamic from 'next/dynamic'
+const Header = dynamic(() => import('../../components/Header'), { ssr: false })
 import prisma from '../../lib/prisma'
 
 type Props = {

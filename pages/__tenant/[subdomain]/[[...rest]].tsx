@@ -1,19 +1,23 @@
 import prisma from '../../../lib/prisma'
 import { GetServerSideProps } from 'next'
+import dynamic from 'next/dynamic'
+
+const Header = dynamic(() => import('../../../components/Header'), { ssr: false })
 
 type Props = {
   salon: any | null
 }
 
 export default function TenantPage({ salon }: Props) {
-  if (!salon) return <main className="p-8"> <h1>Salon's not found</h1> </main>
-
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">{salon.name}</h1>
-      <p className="mt-2">{salon.description}</p>
-      <p className="mt-2 text-sm muted">Telefon: {salon.phone}</p>
-    </main>
+    <div>
+      <Header />
+      <main className="p-8">
+        <h1 className="text-2xl font-bold">{salon.name}</h1>
+        <p className="mt-2">{salon.description}</p>
+        <p className="mt-2 text-sm muted">Telefon: {salon.phone}</p>
+      </main>
+    </div>
   )
 }
 

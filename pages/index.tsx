@@ -1,11 +1,16 @@
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import Container from '../components/Container'
 import Button from '../components/Button'
 import Footer from '../components/Footer'
 
+const Header = dynamic(() => import('../components/Header'), { ssr: false })
+
 export default function Home() {
   return (
-    <main>
+    <div>
+      <Header />
+      <main>
       <Container>
         <section className="hero mt-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -51,6 +56,7 @@ export default function Home() {
 
         <Footer />
       </Container>
-    </main>
+      </main>
+    </div>
   )
 }

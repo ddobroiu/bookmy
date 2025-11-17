@@ -1,4 +1,4 @@
-import prisma from '../../../../lib/prisma'
+import prisma from '../../../lib/prisma'
 import { GetServerSideProps } from 'next'
 
 type Props = {

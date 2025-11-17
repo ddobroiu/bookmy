@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../lib/prisma'
+import prisma from '../../lib/prisma'
 
 const RESERVED = new Set(['www', 'admin', 'api', 'mail', 'ftp', 'support', 'blog', 'shop'])
 

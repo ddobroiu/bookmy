@@ -7,7 +7,7 @@ export default function Header() {
   const { data: session } = useSession()
 
   return (
-    <header className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg">
+    <header className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg sticky top-0 z-50">
       <div className="container-custom flex items-center justify-between py-4">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg">

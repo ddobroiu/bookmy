@@ -5,6 +5,7 @@ import { toKebabCase } from '../../../lib/slug'
 import Container from '../../../components/Container'
 import Input from '../../../components/Input'
 import Button from '../../../components/Button'
+import { BuildingStorefrontIcon, LinkIcon, PhoneIcon, MapPinIcon, ClockIcon, DocumentTextIcon, PhotoIcon, GlobeAltIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 const Header = dynamic(() => import('../../../components/Header'), { ssr: false })
 
@@ -95,88 +96,122 @@ export default function NewSalon() {
   }
 
   return (
-    <div>
+    <div className="bg-gray-50 min-h-screen">
       <Header />
-      <main className="mt-8">
+      <main className="py-12">
         <Container>
-          <div className="max-w-2xl mx-auto card">
-            <h1 className="text-2xl font-bold mb-3">Creează salonul tău</h1>
-            <p className="text-sm muted mb-4">Completează informațiile de bază și publică pagina pentru clienți.</p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input label="Nume salon" value={name} onChange={setName} placeholder="Numele salonului" />
-
-              <div>
-                <label className="block mb-1 text-sm font-medium">Slug</label>
-                <div className="flex gap-2">
-                  <input value={slug} onChange={(e) => setSlug(e.target.value)} onBlur={() => checkSlug(slug)} className="flex-1 border border-gray-200 rounded-md px-3 py-2" />
-                  <button type="button" onClick={() => setSlug(toKebabCase(name))} className="btn-outline px-3 py-2 rounded-md">Auto</button>
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-8 text-white shadow-2xl animate-fade-in-up mb-8">
+              <div className="flex items-center gap-4">
+                <BuildingStorefrontIcon className="w-12 h-12" />
+                <div>
+                  <h1 className="text-3xl font-bold">Creează salonul tău</h1>
+                  <p className="text-lg opacity-90">Completează informațiile de bază și publică pagina pentru clienți.</p>
                 </div>
-                {checking && <p className="text-sm text-gray-500">Verific slug...</p>}
-                {suggestion && (
-                  <p className="text-sm text-yellow-600">
-                    Sugestie: {suggestion}{' '}
-                    <button type="button" onClick={() => setSlug(suggestion)} className="ml-2 text-blue-600">Folosește</button>
-                  </p>
-                )}
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="bg-white rounded-2xl p-8 shadow-lg animate-slide-in-left">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <BuildingStorefrontIcon className="w-6 h-6 text-indigo-500" />
+                  Informații de bază
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Input label="Nume salon" value={name} onChange={setName} placeholder="Numele salonului" icon={<BuildingStorefrontIcon className="w-5 h-5" />} />
+                  <Input label="Telefon" value={phone} onChange={setPhone} placeholder="0740..." icon={<PhoneIcon className="w-5 h-5" />} />
+                  <Input label="Adresă" value={address} onChange={setAddress} placeholder="Strada, oraș" icon={<MapPinIcon className="w-5 h-5" />} />
+                  <Input label="Program (text)" value={openingHours} onChange={setOpeningHours} placeholder="Luni-Vineri 09:00-18:00" icon={<ClockIcon className="w-5 h-5" />} />
+                </div>
+                <div className="mt-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Scurtă descriere</label>
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-medium shadow focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-300 transition-all duration-200" rows={4} placeholder="Descrie salonul tău..." />
+                </div>
               </div>
 
-              <div>
-                <label className="block mb-1 text-sm font-medium">Subdomeniu</label>
-                <div className="flex gap-2">
-                  <input value={subdomain} onChange={(e) => setSubdomain(e.target.value)} onBlur={() => checkSubdomain(subdomain)} className="flex-1 border border-gray-200 rounded-md px-3 py-2" placeholder="ex: salonul-tau" />
-                  <button type="button" onClick={() => setSubdomain(toKebabCase(name))} className="btn-outline px-3 py-2 rounded-md">Auto</button>
+              <div className="bg-white rounded-2xl p-8 shadow-lg animate-slide-in-right">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <LinkIcon className="w-6 h-6 text-purple-500" />
+                  URL și domeniu
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-gray-700">Slug</label>
+                    <div className="flex gap-3">
+                      <input value={slug} onChange={(e) => setSlug(e.target.value)} onBlur={() => checkSlug(slug)} className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 font-medium shadow focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-300 transition-all duration-200" />
+                      <button type="button" onClick={() => setSlug(toKebabCase(name))} className="bg-indigo-100 text-indigo-700 px-4 py-3 rounded-xl hover:bg-indigo-200 transition">Auto</button>
+                    </div>
+                    {checking && <p className="text-sm text-gray-500 mt-2">Verific slug...</p>}
+                    {suggestion && (
+                      <p className="text-sm text-yellow-600 mt-2">
+                        Sugestie: {suggestion}{' '}
+                        <button type="button" onClick={() => setSlug(suggestion)} className="ml-2 text-blue-600 font-semibold hover:underline">Folosește</button>
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-gray-700">Subdomeniu</label>
+                    <div className="flex gap-3">
+                      <input value={subdomain} onChange={(e) => setSubdomain(e.target.value)} onBlur={() => checkSubdomain(subdomain)} className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 font-medium shadow focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-300 transition-all duration-200" placeholder="ex: salonul-tau" />
+                      <button type="button" onClick={() => setSubdomain(toKebabCase(name))} className="bg-purple-100 text-purple-700 px-4 py-3 rounded-xl hover:bg-purple-200 transition">Auto</button>
+                    </div>
+                    {subChecking && <p className="text-sm text-gray-500 mt-2">Verific subdomeniu...</p>}
+                    {subAvailable === true && <p className="text-sm text-green-600 mt-2 flex items-center gap-1"><CheckCircleIcon className="w-4 h-4" /> Disponibil</p>}
+                    {subAvailable === false && <p className="text-sm text-red-600 mt-2 flex items-center gap-1"><XCircleIcon className="w-4 h-4" /> Indisponibil</p>}
+                  </div>
                 </div>
-                {subChecking && <p className="text-sm text-gray-500">Verific subdomeniu...</p>}
-                {subAvailable === true && <p className="text-sm text-green-600">Disponibil</p>}
-                {subAvailable === false && <p className="text-sm text-red-600">Indisponibil</p>}
               </div>
 
-              <Input label="Telefon" value={phone} onChange={setPhone} placeholder="0740..." />
-              <Input label="Adresă" value={address} onChange={setAddress} placeholder="Strada, oraș" />
-              <Input label="Program (text)" value={openingHours} onChange={setOpeningHours} placeholder="Luni-Vineri 09:00-18:00" />
-
-              <label className="block">
-                <span className="text-sm">Scurtă descriere</span>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" rows={3} />
-              </label>
-
-              <label className="block">
-                <span className="text-sm">Images (paste image URL)</span>
-                <div className="flex gap-2 mt-1">
-                  <input value={newImage} onChange={(e) => setNewImage(e.target.value)} className="flex-1 border rounded px-3 py-2" placeholder="https://..." />
-                  <button type="button" onClick={addImage} className="bg-gray-200 px-3 rounded">Add</button>
+              <div className="bg-white rounded-2xl p-8 shadow-lg animate-slide-in-left">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <PhotoIcon className="w-6 h-6 text-pink-500" />
+                  Imagini
+                </h2>
+                <div className="flex gap-3 mb-4">
+                  <input value={newImage} onChange={(e) => setNewImage(e.target.value)} className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 font-medium shadow focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-300 transition-all duration-200" placeholder="https://..." />
+                  <button type="button" onClick={addImage} className="bg-pink-100 text-pink-700 px-6 py-3 rounded-xl hover:bg-pink-200 transition font-semibold">Adaugă</button>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {images.map((img, idx) => (
-                    <div key={idx} className="w-24 h-24 bg-gray-100 rounded overflow-hidden relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img} alt={`img-${idx}`} className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setImages((s) => s.filter((_, i) => i !== idx))} className="absolute top-0 right-0 bg-white text-red-600 px-1">×</button>
+                    <div key={idx} className="relative group">
+                      <img src={img} alt={`img-${idx}`} className="w-full h-24 object-cover rounded-xl shadow" />
+                      <button type="button" onClick={() => setImages((s) => s.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">×</button>
                     </div>
                   ))}
                 </div>
-              </label>
+              </div>
 
-              <label className="block">
-                <span className="text-sm">Social links</span>
-                <div className="flex gap-2 mt-1">
-                  <input value={newSocialPlatform} onChange={(e) => setNewSocialPlatform(e.target.value)} placeholder="e.g. instagram" className="w-32 border rounded px-2 py-1" />
-                  <input value={newSocialUrl} onChange={(e) => setNewSocialUrl(e.target.value)} placeholder="https://" className="flex-1 border rounded px-2 py-1" />
-                  <button type="button" onClick={addSocial} className="bg-gray-200 px-3 rounded">Add</button>
+              <div className="bg-white rounded-2xl p-8 shadow-lg animate-slide-in-right">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <GlobeAltIcon className="w-6 h-6 text-green-500" />
+                  Rețele sociale
+                </h2>
+                <div className="grid md:grid-cols-3 gap-3 mb-4">
+                  <input value={newSocialPlatform} onChange={(e) => setNewSocialPlatform(e.target.value)} placeholder="e.g. instagram" className="border-2 border-gray-200 rounded-xl px-4 py-3 font-medium shadow focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-300 transition-all duration-200" />
+                  <input value={newSocialUrl} onChange={(e) => setNewSocialUrl(e.target.value)} placeholder="https://" className="border-2 border-gray-200 rounded-xl px-4 py-3 font-medium shadow focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-300 transition-all duration-200" />
+                  <button type="button" onClick={addSocial} className="bg-green-100 text-green-700 px-6 py-3 rounded-xl hover:bg-green-200 transition font-semibold">Adaugă</button>
                 </div>
-                <div className="mt-2 space-y-1">
+                <div className="space-y-3">
                   {socialLinks.map((sl, idx) => (
-                    <div key={idx} className="flex items-center justify-between gap-2 p-1 border rounded">
-                      <div className="text-sm"><strong>{sl.platform}</strong>: <span className="text-blue-600">{sl.url}</span></div>
-                      <button type="button" onClick={() => setSocialLinks((s) => s.filter((_, i) => i !== idx))} className="text-sm text-red-600">Remove</button>
+                    <div key={idx} className="flex items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <GlobeAltIcon className="w-5 h-5 text-gray-500" />
+                        <div>
+                          <strong className="text-gray-900">{sl.platform}</strong>
+                          <p className="text-sm text-blue-600">{sl.url}</p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => setSocialLinks((s) => s.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 transition">Șterge</button>
                     </div>
                   ))}
                 </div>
-              </label>
+              </div>
 
-              <div>
-                <Button>Creează salon</Button>
+              <div className="text-center">
+                <Button className="px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <BuildingStorefrontIcon className="w-6 h-6 mr-2" />
+                  Creează salon
+                </Button>
               </div>
             </form>
           </div>

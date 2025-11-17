@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import Container from '../../components/Container'
 import Input from '../../components/Input'
 import Button from '../../components/Button'
+import AuthCard from '../../components/AuthCard'
 
 const Header = dynamic(() => import('../../components/Header'), { ssr: false })
 
@@ -33,52 +34,36 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div>
       <Header />
-      <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <Container>
-          <div className="max-w-md mx-auto">
-            <div className="bg-white shadow-lg rounded-xl p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">BM</div>
-                <div>
-                  <h1 className="text-2xl font-bold">Creează cont</h1>
-                  <p className="text-sm text-gray-500">Cont pentru {roleFromQuery === 'OWNER' ? 'proprietari' : 'clienți'}. Continuă cu datele tale.</p>
-                </div>
+      <AuthCard title="Creează cont" subtitle={roleFromQuery === 'OWNER' ? 'Cont pentru proprietari' : 'Cont pentru clienți'}>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" />
+          <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
+          <div>
+            <label className="block">
+              <div className="text-sm mb-1 font-medium">Parolă</div>
+              <div className="relative">
+                <input
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Alege o parolă sigură"
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-sm text-gray-500">{showPassword ? 'Ascunde' : 'Arată'}</button>
               </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" />
-                <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" />
-                <div>
-                  <label className="block">
-                    <div className="text-sm mb-1 font-medium">Parolă</div>
-                    <div className="relative">
-                      <input
-                        className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Alege o parolă sigură"
-                      />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-sm text-gray-500">{showPassword ? 'Ascunde' : 'Arată'}</button>
-                    </div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">Ai deja cont? <a href="/auth/signin" className="text-indigo-600">Autentifică-te</a></div>
-                  <div>
-                    <Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button>
-                  </div>
-                </div>
-              </form>
-
-              {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}
-            </div>
+            </label>
           </div>
-        </Container>
-      </main>
+
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-500">Ai deja cont? <a href="/auth/signin" className="text-indigo-600">Autentifică-te</a></div>
+            <Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button>
+          </div>
+        </form>
+
+        {status === 'error' && <p className="mt-3 text-red-600">A apărut o eroare la înregistrare.</p>}
+      </AuthCard>
     </div>
   )
 }

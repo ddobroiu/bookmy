@@ -7,9 +7,7 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm">
       <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/">
-          <a className="font-bold text-lg">Bookmy</a>
-        </Link>
+        <Link href="/" className="font-bold text-lg">Bookmy</Link>
 
         <nav>
           {session ? (
@@ -23,9 +21,7 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <Link href="/auth/signin">
-              <a className="text-sm bg-blue-500 text-white px-3 py-1 rounded">Sign in</a>
-            </Link>
+            <Link href="/auth/signin" className="text-sm bg-blue-500 text-white px-3 py-1 rounded">Sign in</Link>
           )}
         </nav>
       </div>

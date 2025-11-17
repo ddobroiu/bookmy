@@ -29,7 +29,21 @@ export const authOptions: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
+  },
+  callbacks: {
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.user = { id: user.id, email: user.email, name: user.name }
+      }
+      return token
+    },
+    async session({ session, token }: any) {
+      if (token && token.user) {
+        session.user = token.user
+      }
+      return session
+    },
   },
   // use default built-in pages; avoid pointing signIn to an API route (causes redirect loops)
 }

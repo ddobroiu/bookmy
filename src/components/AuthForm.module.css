@@ -19,11 +19,23 @@
 .registerContainer {
   max-width: 450px;
   margin: 50px auto;
-  padding: 30px;
+  padding: 40px; /* Mărit padding-ul */
   background-color: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Umbră mai pronunțată */
   text-align: center;
+  border: 1px solid #e0e0e0; /* Adăugat un chenar subtil */
+}
+
+.registerContainer h1 {
+  color: #333;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.registerContainer p {
+  color: #666;
+  margin-bottom: 30px;
 }
 
 .formGroup {
@@ -31,13 +43,27 @@
   text-align: left;
 }
 
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+}
+
 .inputField {
   width: 100%;
-  padding: 12px;
+  padding: 12px 15px; /* Ajustat padding-ul */
   margin-top: 5px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px; /* Rotunjire mai mare */
   box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.inputField:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  outline: none;
 }
 
 .roleSelector {
@@ -49,12 +75,13 @@
 
 .roleButton {
   flex: 1;
-  padding: 10px;
+  padding: 12px; /* Mărit padding-ul */
   border: 2px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px; /* Rotunjire mai mare */
   cursor: pointer;
   background-color: #f9f9f9;
   transition: all 0.2s;
+  font-weight: 600;
 }
 
 .roleButton.active {
@@ -66,20 +93,41 @@
 
 .submitButton {
   width: 100%;
-  padding: 12px;
+  padding: 14px; /* Mărit padding-ul */
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px; /* Rotunjire mai mare */
   cursor: pointer;
   font-size: 16px;
+  font-weight: 600; /* Îngroșat textul */
   margin-top: 10px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #0056b3; /* Culoare mai închisă la hover */
+  transform: translateY(-2px); /* Efect de ridicare */
 }
 
 .submitButton:disabled {
   background-color: #a8cfff;
   cursor: not-allowed;
+}
+
+.authLink {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.authLink a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.authLink a:hover {
+  text-decoration: underline;
 }
 
 .successMessage {

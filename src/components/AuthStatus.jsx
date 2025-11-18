@@ -72,6 +72,14 @@ export default function AuthStatus() {
         </Link>
       )}
 
+      {userRole === 'client' && (
+        <Link href="/profil/programari" passHref legacyBehavior>
+          <button className={styles.loginBtn} style={{ borderColor: '#007bff', color: '#007bff' }}>
+            Programările Mele
+          </button>
+        </Link>
+      )}
+
       <button onClick={handleLogout} className={styles.registerBtn} style={{ backgroundColor: '#e64c3c' }}>
         Deconectare
       </button>

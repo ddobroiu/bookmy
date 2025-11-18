@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link'; // Importă Link
 import styles from '../../components/AuthForm.module.css'; 
 
 export default function RegisterClientPage() {
@@ -105,6 +106,10 @@ export default function RegisterClientPage() {
         </p>
       )}
 
+      {/* Link către login */}
+      <div className={styles.authLink}>
+        Ai deja un cont? <Link href="/login">Autentifică-te</Link>
+      </div>
     </div>
   );
 }

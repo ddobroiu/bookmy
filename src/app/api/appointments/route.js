@@ -1,7 +1,7 @@
 // src/app/api/appointments/route.js
 import { NextResponse } from 'next/server';
-import prisma from '../../lib/prisma';
-import { getSession } from '../../lib/session';
+import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
 
 export async function GET(request) {
   const session = await getSession();

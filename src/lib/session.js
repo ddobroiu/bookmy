@@ -30,8 +30,8 @@ const sessionOptions = {
  * @returns {Promise<import('iron-session').IronSession<SessionData>>}
  */
 export async function getSession() {
-  // Corect: Next.js 16 + iron-session v8 -> cookies() direct, nu ca obiect
-  const session = await getIronSession(cookies(), sessionOptions);
+  // Corect: Next.js 16 + iron-session v8 -> await cookies() pentru API routes
+  const session = await getIronSession(await cookies(), sessionOptions);
   return session;
 }
 

@@ -184,7 +184,9 @@ export default function Reviews({ salonId }) {
                     {reviews.map((review) => (
                         <div key={review.id} className={styles.reviewCard}>
                             <div className={styles.reviewHeader}>
-                                <span className={styles.reviewUser}>{review.user.email.split('@')[0]}</span>
+                                <span className={styles.reviewUser}>
+                                    {review.user.name || review.user.email.split('@')[0]}
+                                </span>
                                 <span className={styles.reviewDate}>
                                     {new Date(review.createdAt).toLocaleDateString('ro-RO')}
                                 </span>

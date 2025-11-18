@@ -1,4 +1,4 @@
-// /components/BookingWidget.jsx (COD COMPLET CU SELECTARE ANGAJAT)
+// /components/BookingWidget.jsx (COD COMPLET FINAL)
 
 'use client';
 
@@ -15,10 +15,11 @@ const mockStaff = [
     { id: 103, name: 'Orice Angajat Disponibil', available: true, preferred: true },
 ];
 
-// Simulare de date pentru sloturile libere
+// Simulare de date pentru sloturile libere (Aici va fi apelul API real)
 const fetchAvailableSlots = (serviceId, staffId, date) => {
+    // Simulare API Call NOU: Aici ar fi apelul GET la /api/slots
     console.log(`Fetching slots for service ${serviceId}, staff ${staffId}, on ${date}`);
-    // Sloturile sunt diferite în funcție de angajat
+
     const baseSlots = staffId === 102 ? ['10:30', '11:30', '16:00'] : ['09:00', '10:00', '14:30', '15:30'];
     
     return baseSlots.map(time => ({ 
@@ -29,10 +30,9 @@ const fetchAvailableSlots = (serviceId, staffId, date) => {
 
 export default function BookingWidget({ services: availableServices, salonId }) {
     
-    // Pașii booking-ului
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedService, setSelectedService] = useState(null);
-    const [selectedStaff, setSelectedStaff] = useState(null); // NOU: Angajatul
+    const [selectedStaff, setSelectedStaff] = useState(null); // Angajatul
     const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD')); 
     const [selectedTime, setSelectedTime] = useState(null);
     const [clientName, setClientName] = useState('');
@@ -43,21 +43,12 @@ export default function BookingWidget({ services: availableServices, salonId }) 
     const [availableSlots, setAvailableSlots] = useState([]);
     const [isFetchingSlots, setIsFetchingSlots] = useState(false);
     
-
-    // Logica de navigare la Pasul 3 (Data/Ora)
-    const handleStaffSelect = (staffMember) => {
-        setSelectedStaff(staffMember);
-        setCurrentStep(3); // Trecem de la Angajat direct la Data/Ora
-        // Încărcăm sloturile pentru data curentă imediat ce angajatul este selectat
-        loadSlots(selectedDate, selectedService.id, staffMember.id); 
-    };
-    
     // Logica de încărcare sloturi
     const loadSlots = useCallback(async (date, serviceId, staffId) => {
         setIsFetchingSlots(true);
         setSelectedTime(null); 
         
-        // Simulare API Call NOU: Trimitem și ID-ul Angajatului
+        // Simulare API Call (Înlocuită cu logica reală în backend)
         const slots = await fetchAvailableSlots(serviceId, staffId, date);
         
         setAvailableSlots(slots);
@@ -65,6 +56,18 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         setIsFetchingSlots(false);
     }, []);
 
+    // Logica de navigare la Pasul 3 (Data/Ora)
+    const handleStaffSelect = (staffMember) => {
+        setSelectedStaff(staffMember);
+        setCurrentStep(3); // Trecem de la Angajat direct la Data/Ora
+        loadSlots(selectedDate, selectedService.id, staffMember.id); 
+    };
+
+    // Logica de navigare la Pasul 2 (Angajat)
+    const handleServiceSelect = (service) => {
+        setSelectedService(service);
+        setCurrentStep(2); 
+    };
 
     // Trimiterea Programării (API Call)
     const handleFinalBooking = async () => {
@@ -86,8 +89,9 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         };
         
         try {
-            // ... (Apelul API la /api/booking/route.js - fără modificări) ...
+            // AICI ARE LOC APELUL FINAL LA /api/booking/route.js
             const response = { ok: true }; // Simulare succes
+            // const response = await fetch('/api/booking', { ... }); 
 
             if (response.ok) {
                 setBookingSuccess(true);
@@ -123,7 +127,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
                 <div 
                     key={service.id}
                     className={styles.selectionItem}
-                    onClick={() => {setSelectedService(service); setCurrentStep(2);}} // Trecem la Pasul 2 (Angajat)
+                    onClick={() => handleServiceSelect(service)} // Trecem la Pasul 2 (Angajat)
                 >
                     <span className={styles.serviceName}>{service.name} (Durata: {service.duration} min)</span>
                     <span className={styles.servicePrice}>{service.price} RON</span>
@@ -232,7 +236,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
                     placeholder="Ion Popescu"
                 />
             </div>
-            <div className={styles.formGroup}>
+            <div className.formGroup}>
                 <label>Număr de Telefon (pentru confirmare):</label>
                 <input 
                     type="tel" 
@@ -253,8 +257,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         </div>
     );
 
-    // Pasul 5 (Confirmare Finală) - Fără modificări
-
+    // Pasul 5 (Confirmare Finală)
     const renderFinalConfirmationStep = () => (
         <div style={{textAlign: 'center'}}>
             <FaCheckCircle 

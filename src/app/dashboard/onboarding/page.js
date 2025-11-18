@@ -82,15 +82,29 @@ export default function OnboardingPage() {
     };
     
     const handleSubmission = async () => {
-        // AICI AR VENI APELUL API REAL PENTRU SALVAREA DATELOR FINALE (POST)
-        // La finalizare, se trimit datele: formData
+        // AICI ARE LOC APELUL API REAL PENTRU SALVAREA DATELOR FINALE (POST)
         
-        showToast('Configurare salon finalizată. Datele au fost simulate.', 'success');
-        console.log('FINAL SUBMISSION DATA:', formData);
-
-        // Simulare: Setează starea de setup și redirecționează
-        localStorage.setItem('salonSetup', 'true'); 
-        router.push('/dashboard'); 
+        try {
+            // Apelează API Route-ul Onboarding (care a fost definit anterior)
+            const response = await fetch('/api/onboarding', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            
+            if (response.ok) {
+                showToast('Configurare afacere finalizată și salvată!', 'success');
+                // Simulare: Setează starea de setup și redirecționează
+                localStorage.setItem('salonSetup', 'true'); 
+                router.push('/dashboard'); 
+            } else {
+                const errorData = await response.json();
+                showToast(errorData.message || 'Eroare la salvarea configurării.', 'error');
+            }
+            
+        } catch (error) {
+            showToast('Eroare de rețea. Nu s-a putut salva configurarea.', 'error');
+        }
     };
     
     const handleInputChange = (e) => {

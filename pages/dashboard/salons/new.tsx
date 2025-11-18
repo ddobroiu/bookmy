@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { toKebabCase } from '../../../lib/slug'
 import Container from '../../../components/Container'
 import Input from '../../../components/Input'
-import Button from '../../../components/Button'
+import { Button } from '../../../components/ui/button'
 import { BuildingStorefrontIcon, LinkIcon, PhoneIcon, MapPinIcon, ClockIcon, DocumentTextIcon, PhotoIcon, GlobeAltIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 const Header = dynamic(() => import('../../../components/Header'), { ssr: false })

@@ -4,7 +4,7 @@ import { authOptions } from '../api/auth/[...nextauth]'
 import dynamic from 'next/dynamic'
 import prisma from '../../lib/prisma'
 import Container from '../../components/Container'
-import Button from '../../components/Button'
+import { Button } from '../../components/ui/button'
 import { BuildingStorefrontIcon, PlusIcon, EyeIcon, CogIcon } from '@heroicons/react/24/solid'
 
 const Header = dynamic(() => import('../../components/Header'), { ssr: false })

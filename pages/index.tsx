@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import Container from '../components/Container'
-import Button from '../components/Button'
+import { Button } from '../components/ui/button'
 import Footer from '../components/Footer'
 
 const Header = dynamic(() => import('../components/Header'), { ssr: false })

@@ -11,24 +11,16 @@ export default async function ProfilePage() {
 
   let userData = null;
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/profile`, {
-      headers: {
-        'Cookie': `session=${session.sessionToken}` // Pass session token for authentication
-      },
-      cache: 'no-store' // Ensure fresh data
+    const response = await fetch('http://localhost:3000/api/user/profile', {
+      cache: 'no-store'
     });
 
     if (!response.ok) {
-      // Handle cases where the user might not be found or other API errors
-      console.error(`Failed to fetch user profile: ${response.status} ${response.statusText}`);
-      // Optionally redirect to an error page or show a message
-      redirect('/login'); // Redirect to login if profile fetch fails
+      redirect('/login');
     }
-
     userData = await response.json();
   } catch (error) {
-    console.error('Error fetching user profile:', error);
-    redirect('/login'); // Redirect to login on network error
+    redirect('/login');
   }
 
   return <ProfileClientPage initialUserData={userData} />;

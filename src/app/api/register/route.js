@@ -20,6 +20,9 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Parola trebuie să aibă cel puțin 6 caractere.' }, { status: 400 });
     }
 
+    // NOU: CONVERTIM ROLUL LA MAJUSCULE pentru a se potrivi cu ENUM-ul din Prisma
+    const prismaRole = role.toUpperCase();
+    
     // 1. Verificăm dacă utilizatorul există deja în baza de date
     const existingUser = await prisma.user.findUnique({
       where: { email: email },
@@ -37,8 +40,8 @@ export async function POST(request) {
       data: {
         email,
         passwordHash, // Salvăm parola criptată
-        role, // 'CLIENT' sau 'PARTENER'
-        salonSetup: role === 'PARTENER' ? false : true,
+        role: prismaRole, // Trimitem rolul corect (CLIENT sau PARTENER)
+        salonSetup: prismaRole === 'PARTENER' ? false : true,
       },
     });
     
@@ -50,7 +53,7 @@ export async function POST(request) {
         subject: 'Bun venit la BooksApp!',
         html: `
           <h1>Bine ai venit, ${email}!</h1>
-          <p>Contul tău a fost creat cu succes ca **${role.toUpperCase()}**.</p>
+          <p>Contul tău a fost creat cu succes ca **${prismaRole}**.</p>
           <p>Te poți autentifica acum pe platforma noastră.</p>
         `,
       });

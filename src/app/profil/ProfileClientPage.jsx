@@ -59,9 +59,7 @@ export default function ProfileClientPage({ initialUserData }) {
       addToast(error.message || 'Eroare la actualizarea profilului.', 'error');
     }
   };
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState(initialUserData);
-  const { addToast } = useToast();
+  // ...existing code...
 
   return (
     <div className="container mx-auto p-4">

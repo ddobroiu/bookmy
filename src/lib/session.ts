@@ -31,6 +31,7 @@ const sessionOptions = {
  * @returns {Promise<IronSession<SessionData>>}
  */
 export async function getSession(): Promise<IronSession<SessionData>> {
-  const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+  // Next.js 16: cookies() este Promise, trebuie await
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
   return session;
 }

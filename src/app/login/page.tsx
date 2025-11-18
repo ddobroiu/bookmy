@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { JSX } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '../../context/ToastContext';
@@ -42,7 +43,7 @@ export default function LoginPage(): JSX.Element {
         const userRole = data.user?.role;
 
         if (userRole) {
-          showToast(`Logare reușită! Bine ai venit, ${data.user.name || userRole}.`, 'success');
+          showToast(`Logare reușită! Bine ai venit, ${(data.user?.name ?? userRole)}.`, 'success');
           localStorage.setItem('userRole', userRole);
 
           if (userRole === 'PARTENER') { // Assuming 'PARTENER' is the correct enum value

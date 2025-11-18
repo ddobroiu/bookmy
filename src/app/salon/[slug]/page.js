@@ -1,39 +1,46 @@
-// /src/app/salon/[slug]/page.js (COD COMPLET FINAL)
+// /src/app/salon/[slug]/page.js (COD FINAL - CLIENT SIDE FETCH)
 
+'use client'; // Acum este un Client Component
+
+import React, { useState, useEffect } from 'react';
 import { FaStar, FaMapMarkerAlt, FaClock, FaCalendarAlt, FaInfoCircle, FaListUl } from 'react-icons/fa';
 import styles from '../salon.module.css'; 
-// Calea: 3 nivele sus pentru /src/components
 import BookingWidget from '../../../components/BookingWidget'; 
 import AIChatBooking from '../../../components/AIChatBooking'; 
-// Calea: 3 nivele sus pentru /src/db.js
-import { getSalonDetails, findSalonServices } from '../../../db'; 
 
-
-// Funcție asincronă pentru a prelua datele salonului
-const fetchSalonData = async (slug) => {
-    // Așteptăm răspunsul din baza de date (simulată)
-    const salon = getSalonDetails(slug);
-    
-    if (!salon) {
-        return null; 
-    }
-    
-    const services = findSalonServices(salon.id);
-    
-    return {
-        ...salon,
-        services: services, 
-    };
-};
-
-
-export default async function SalonPage({ params }) {
+export default function SalonPage({ params }) {
     const { slug } = params; 
-    
-    const salonData = await fetchSalonData(slug);
-    
+    const [salonData, setSalonData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAndSetData = async () => {
+            try {
+                // APEL NOU: Apelează API Route-ul (Backend)
+                const response = await fetch(`/api/salon?slug=${slug}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setSalonData(data);
+                } else {
+                    // Dacă API-ul dă 404
+                    setSalonData(null); 
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                setSalonData(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAndSetData();
+    }, [slug]);
+
+    if (isLoading) {
+        return <div className={styles.loadingContainer}>Se încarcă datele salonului...</div>;
+    }
+
     if (!salonData) {
-        // Dacă eroarea 404 persistă, verificați căile din fișierele API
         return <div>404 Salonul cu slug-ul '{slug}' nu a fost găsit.</div>; 
     }
     
@@ -53,6 +60,7 @@ export default async function SalonPage({ params }) {
 
     return (
         <div className={styles.salonContainer}>
+            {/* Restul codului de randare folosește salonData */}
             <div className={styles.header}>
                 <h1 className={styles.salonTitle}>{salonData.name}</h1>
                 <div className={styles.rating}>
@@ -87,19 +95,17 @@ export default async function SalonPage({ params }) {
                     {/* 1. Componenta Booking Widget (Pașii de Programare) */}
                     <BookingWidget services={salonData.services} salonId={salonData.id} />
                     
-                    {/* 2. Lista Statică de Servicii */}
+                    {/* 2. Chat Botul AI (Metoda Conversațională) */}
+                    <div style={{marginTop: '40px'}}>
+                         <AIChatBooking />
+                    </div>
+
+                    {/* 3. Lista Statică de Servicii */}
                     <div style={{marginTop: '40px'}}>
                         <ServicesList services={salonData.services} />
                     </div>
                 </div>
             </div>
-            
-            {/* 🤖 CHAT BOT FIXAT (Noua poziționare) */}
-            {/* Trebuie să aplici clasa .chatBubble din AIChat.module.css aici */}
-            <div className="fixedChatWidget"> 
-                 <AIChatBooking />
-            </div>
-            
         </div>
     );
 }

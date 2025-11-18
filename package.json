@@ -20,22 +20,22 @@
     "clsx": "^2.1.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.395.0",
-    "next": "latest",
+    "next": "14.2.3",
     "next-auth": "^4.24.13",
     "nodemailer": "^7.0.10",
-    "react": "latest",
-    "react-dom": "latest",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "latest",
+    "@tailwindcss/postcss": "4.0.0-alpha.13",
     "@types/node": "24.10.1",
-    "@types/react": "19.2.5",
-    "autoprefixer": "latest",
-    "postcss": "latest",
+    "@types/react": "18.2.0",
+    "autoprefixer": "10.4.19",
+    "postcss": "8.4.38",
     "prisma": "^6.19.0",
-    "tailwindcss": "latest",
-    "typescript": "latest"
+    "tailwindcss": "3.4.3",
+    "typescript": "5.4.5"
   }
 }

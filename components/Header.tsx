@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
 import { Button } from './ui/button'
-import { LogIn, LogOut, PlusCircle, User, LayoutDashboard } from 'lucide-react'
+import {
+  ArrowLeftOnRectangleIcon,
+  ArrowRightOnRectangleIcon,
+} from '@heroicons/react/24/outline'
 
 export default function Header() {
   const { data: session } = useSession()

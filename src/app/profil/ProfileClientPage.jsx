@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
+import Link from 'next/link';
 
 export default function ProfileClientPage({ initialUserData }) {
   const [userData, setUserData] = useState(initialUserData);

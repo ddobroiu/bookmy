@@ -5,27 +5,29 @@ import { Resend } from 'resend';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { Role } from '@prisma/client'; // Importă enumul Role
+import { z } from 'zod'; // Import Zod
+
+import logger from '@/lib/logger';
+import { ONBOARDING_EMAIL_FROM } from '@/config';
+
+// Define Zod schema for registration input
+const registerSchema = z.object({
+  email: z.string().email('Adresa de email este invalidă.'),
+  password: z.string().min(6, 'Parola trebuie să aibă cel puțin 6 caractere.'),
+  role: z.nativeEnum(Role, {
+    errorMap: () => ({ message: 'Rol invalid.' }),
+  }),
+});
 
 // Inițializăm Resend cu cheia API din variabilele de mediu
 const resend = new Resend(process.env.RESEND_API_KEY); 
 
 export async function POST(request) {
   try {
-    const { email, password, role } = await request.json();
+    const body = await request.json();
     
-    // Validare input
-    if (!email || !password || !role) {
-      return NextResponse.json({ message: 'Lipsește email-ul, parola sau rolul.' }, { status: 400 });
-    }
-    if (password.length < 6) {
-      return NextResponse.json({ message: 'Parola trebuie să aibă cel puțin 6 caractere.' }, { status: 400 });
-    }
-
-    // NOU: Validare și conversie corectă pentru enum
-    const prismaRole = role && typeof role === 'string' ? role.trim().toUpperCase() : '';
-    if (!['CLIENT', 'PARTENER'].includes(prismaRole)) {
-      return NextResponse.json({ message: 'Rol invalid.' }, { status: 400 });
-    }
+    // Validate input using Zod
+    const { email, password, role } = registerSchema.parse(body);
     
     // 1. Verificăm dacă utilizatorul există deja în baza de date
     const existingUser = await prisma.user.findUnique({
@@ -33,6 +35,7 @@ export async function POST(request) {
     });
 
     if (existingUser) {
+      logger.info(`Registration attempt for existing email: ${email}`);
       return NextResponse.json({ message: 'Acest email este deja înregistrat.' }, { status: 409 });
     }
 
@@ -44,36 +47,41 @@ export async function POST(request) {
       data: {
         email,
         passwordHash, // Salvăm parola criptată
-        role: prismaRole, // Trimitem rolul ca string valid pentru enum
-        salonSetup: prismaRole === 'PARTENER' ? false : true,
+        role: role, // Trimitem rolul ca string valid pentru enum
+        salonSetup: role === 'PARTENER' ? false : true,
       },
     });
     
     // 4. Trimiterea Email-ului de Confirmare (Folosind Resend)
     try {
       await resend.emails.send({
-        from: 'BooksApp <onboarding@bookmy.ro>', 
+        from: ONBOARDING_EMAIL_FROM, 
         to: [email],
         subject: 'Bun venit la BooksApp!',
         html: `
           <h1>Bine ai venit, ${email}!</h1>
-          <p>Contul tău a fost creat cu succes ca **${prismaRole}**.</p>
+          <p>Contul tău a fost creat cu succes ca **${role}**.</p>
           <p>Te poți autentifica acum pe platforma noastră.</p>
         `,
       });
     } catch (emailError) {
-      console.error('Resend Error:', emailError);
+      logger.error('Resend Error:', emailError);
       // Chiar dacă email-ul eșuează, înregistrarea este un succes.
       // Logăm eroarea dar continuăm.
     }
 
+    logger.info(`User registered successfully: ${user.email}, Role: ${user.role}`);
     return NextResponse.json({ 
       message: 'Înregistrare reușită! Verifică-ți emailul.',
       user: { id: user.id, email: user.email, role: user.role }, // Nu trimitem parola înapoi
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Registration Error:', error);
+    if (error instanceof z.ZodError) {
+      logger.warn('Validation error during registration:', error.errors);
+      return NextResponse.json({ message: error.errors[0].message }, { status: 400 });
+    }
+    logger.error('Registration Error:', error);
     // Verificăm dacă este o eroare cunoscută de la Prisma
     if (error.code) { // Prisma errors have codes
         return NextResponse.json({ message: `Eroare la scrierea în baza de date: ${error.message}` }, { status: 500 });

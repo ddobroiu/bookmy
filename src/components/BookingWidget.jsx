@@ -1,4 +1,4 @@
-// /components/BookingWidget.jsx (COD COMPLET FINAL)
+// /src/components/BookingWidget.jsx (COD COMPLET FINAL)
 
 'use client';
 
@@ -8,31 +8,31 @@ import moment from 'moment';
 import styles from './AuthForm.module.css'; 
 import Link from 'next/link'; 
 
-// Simulare: Date Angajați (În producție ar fi un API call)
+// Simulare: Date Angajați (Aceasta ar fi preluată de la un API în producție)
 const mockStaff = [
     { id: 101, name: 'Maria Popescu (Stilist)', available: true },
     { id: 102, name: 'Ion Vasile (Barber)', available: true },
     { id: 103, name: 'Orice Angajat Disponibil', available: true, preferred: true },
 ];
 
-// Simulare de date pentru sloturile libere (Aici va fi apelul API real)
+// Simulare de date pentru sloturile libere (Aceasta ar fi /api/slots)
 const fetchAvailableSlots = (serviceId, staffId, date) => {
-    // Simulare API Call NOU: Aici ar fi apelul GET la /api/slots
-    console.log(`Fetching slots for service ${serviceId}, staff ${staffId}, on ${date}`);
-
+    // Logica de returnare a sloturilor bazată pe angajat (simulare)
     const baseSlots = staffId === 102 ? ['10:30', '11:30', '16:00'] : ['09:00', '10:00', '14:30', '15:30'];
     
+    // În producție, aici ar fi logică complexă de verificare a programărilor și a orarului salonului
     return baseSlots.map(time => ({ 
         time, 
-        available: Math.random() > 0.1 
+        available: Math.random() > 0.1 // Simulează ocuparea
     })); 
 };
 
 export default function BookingWidget({ services: availableServices, salonId }) {
     
+    // Pașii booking-ului
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedService, setSelectedService] = useState(null);
-    const [selectedStaff, setSelectedStaff] = useState(null); // Angajatul
+    const [selectedStaff, setSelectedStaff] = useState(null); 
     const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD')); 
     const [selectedTime, setSelectedTime] = useState(null);
     const [clientName, setClientName] = useState('');
@@ -48,7 +48,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         setIsFetchingSlots(true);
         setSelectedTime(null); 
         
-        // Simulare API Call (Înlocuită cu logica reală în backend)
+        // Simulare API Call (Aici ar trebui să apelezi /api/slots)
         const slots = await fetchAvailableSlots(serviceId, staffId, date);
         
         setAvailableSlots(slots);
@@ -59,7 +59,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
     // Logica de navigare la Pasul 3 (Data/Ora)
     const handleStaffSelect = (staffMember) => {
         setSelectedStaff(staffMember);
-        setCurrentStep(3); // Trecem de la Angajat direct la Data/Ora
+        setCurrentStep(3); 
         loadSlots(selectedDate, selectedService.id, staffMember.id); 
     };
 
@@ -80,7 +80,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         
         const bookingData = {
             service: selectedService,
-            staff: selectedStaff, // Trimitem detaliile angajatului
+            staff: selectedStaff, 
             date: selectedDate,
             time: selectedTime,
             clientName: clientName,
@@ -95,7 +95,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
 
             if (response.ok) {
                 setBookingSuccess(true);
-                setCurrentStep(5);
+                setCurrentStep(5); // Trecem la pasul final de confirmare
             } else {
                 alert('Eroare la salvarea programării!');
             }
@@ -127,7 +127,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
                 <div 
                     key={service.id}
                     className={styles.selectionItem}
-                    onClick={() => handleServiceSelect(service)} // Trecem la Pasul 2 (Angajat)
+                    onClick={() => handleServiceSelect(service)} 
                 >
                     <span className={styles.serviceName}>{service.name} (Durata: {service.duration} min)</span>
                     <span className={styles.servicePrice}>{service.price} RON</span>
@@ -150,7 +150,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
                 <div 
                     key={staff.id}
                     className={styles.selectionItem}
-                    onClick={() => handleStaffSelect(staff)} // Trecem la Pasul 3 (Data/Ora)
+                    onClick={() => handleStaffSelect(staff)} 
                 >
                     <span className={styles.serviceName}>{staff.name}</span>
                     <span className={styles.servicePrice}>
@@ -236,7 +236,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
                     placeholder="Ion Popescu"
                 />
             </div>
-            <div className.formGroup}>
+            <div className={styles.formGroup}> 
                 <label>Număr de Telefon (pentru confirmare):</label>
                 <input 
                     type="tel" 
@@ -301,9 +301,9 @@ export default function BookingWidget({ services: availableServices, salonId }) 
             
             <div className={styles.widgetBody}>
                 {currentStep === 1 && renderServiceStep()}
-                {currentStep === 2 && selectedService && renderStaffStep()} {/* Pas 2 NOU */}
-                {currentStep === 3 && selectedService && selectedStaff && renderDateTimeStep()} {/* Pas 3 */}
-                {currentStep === 4 && selectedService && selectedStaff && renderClientDetailsStep()} {/* Pas 4 */}
+                {currentStep === 2 && selectedService && renderStaffStep()}
+                {currentStep === 3 && selectedService && selectedStaff && renderDateTimeStep()}
+                {currentStep === 4 && selectedService && selectedStaff && renderClientDetailsStep()}
                 {currentStep === 5 && bookingSuccess && renderFinalConfirmationStep()}
             </div>
         </div>

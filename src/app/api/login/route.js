@@ -21,37 +21,53 @@ export async function POST(request) {
     if (!user) {
       return NextResponse.json({ message: 'Credențiale invalide.' }, { status: 401 });
     }
-    
+
     // 2. Verificarea Parolei folosind bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    
+
     if (!isPasswordValid) {
       return NextResponse.json({ message: 'Credențiale invalide.' }, { status: 401 });
     }
 
     // 3. Crearea și Salvarea Sesiunii cu iron-session
-    const session = await getSession();
-    session.user = {
+    let session;
+    try {
+      session = await getSession();
+    } catch (sessionError) {
+      console.error('Eroare la getSession:', sessionError);
+      return NextResponse.json({ message: 'Eroare la inițializarea sesiunii.', details: String(sessionError) }, { status: 500 });
+    }
+
+    try {
+      session.user = {
         id: user.id,
-        email: user.email, // Stocăm și email-ul pentru acces rapid
+        email: user.email,
         role: user.role,
         salonSetup: user.salonSetup,
-    };
-    await session.save(); // Salvează datele în cookie-ul de sesiune criptat
+      };
+      await session.save();
+    } catch (sessionSaveError) {
+      console.error('Eroare la salvarea sesiunii:', sessionSaveError);
+      return NextResponse.json({ message: 'Eroare la salvarea sesiunii.', details: String(sessionSaveError) }, { status: 500 });
+    }
 
     // 4. Logare reușită: Trimitem răspunsul
     return NextResponse.json({ 
       message: 'Logare reușită!',
       user: {
-          id: user.id,
-          email: user.email,
-          role: user.role.toLowerCase(),
-          salonSetup: user.salonSetup,
+        id: user.id,
+        email: user.email,
+        role: user.role.toLowerCase(),
+        salonSetup: user.salonSetup,
       }
     }, { status: 200 });
 
   } catch (error) {
+    // Logare detaliată cu stack trace și variabile relevante
     console.error('Login Error:', error);
-    return NextResponse.json({ message: 'Eroare internă de server.' }, { status: 500 });
+    if (error && error.stack) {
+      console.error('Stack:', error.stack);
+    }
+    return NextResponse.json({ message: 'Eroare internă de server.', details: String(error) }, { status: 500 });
   }
 }

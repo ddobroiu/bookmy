@@ -97,8 +97,15 @@ model Appointment {
   staff        Staff     @relation(name: "StaffAppointments", fields: [staffId], references: [id]) 
 
   review       Review? // Recenzia asociată acestei programări
+  status       AppointmentStatus @default(CONFIRMED)
 
   @@map("appointments")
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
 }
 
 // 5. Modelul Recenzie (Review)

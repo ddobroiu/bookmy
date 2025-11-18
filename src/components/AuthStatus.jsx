@@ -73,9 +73,9 @@ export default function AuthStatus() {
       )}
 
       {userRole === 'client' && (
-        <Link href="/profil/programari" passHref legacyBehavior>
+        <Link href="/profil" passHref legacyBehavior>
           <button className={styles.loginBtn} style={{ borderColor: '#007bff', color: '#007bff' }}>
-            Programările Mele
+            Profilul Meu
           </button>
         </Link>
       )}

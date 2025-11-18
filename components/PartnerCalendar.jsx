@@ -1,64 +1,85 @@
-// /components/PartnerCalendar.jsx (COD COMPLET CU LOGICĂ DE ADAUGARE EVENIMENT)
+// /components/PartnerCalendar.jsx (COD COMPLET CU CONECTARE API)
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 
-// Asigură-te că moment.js are formatarea românească pentru afișaj corect
-// Deși nu am instalat pachetul moment-with-locales, setările implicite sunt deseori suficiente
 moment.locale('ro'); 
 const localizer = momentLocalizer(moment);
 
-// Date de exemplu (deocamdată goale)
-const initialEvents = [
-  {
-    title: 'Pauză de Prânz (Blocat)',
-    start: moment().startOf('day').add(13, 'hours').toDate(),
-    end: moment().startOf('day').add(14, 'hours').toDate(),
-    isBlock: true, // Tip de eveniment
-  },
-  {
-    title: 'Programare: Client X (Manichiură)',
-    start: moment().startOf('day').add(15, 'hours').toDate(),
-    end: moment().startOf('day').add(16, 'hours').toDate(),
-    isBlock: false,
-  },
-];
-
 export default function PartnerCalendar() {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSelectSlot = ({ start, end }) => {
-    // 1. Solicită utilizatorului informații
+
+  // 1. ÎNCĂRCAREA PROGRAMĂRILOR (Fetch from API)
+  const fetchAppointments = useCallback(async () => {
+    try {
+        setIsLoading(true);
+        const response = await fetch('/api/appointments');
+        if (response.ok) {
+            const data = await response.json();
+            // Asigurăm că start/end sunt obiecte Date
+            const formattedEvents = data.map(event => ({
+                ...event,
+                start: new Date(event.start),
+                end: new Date(event.end),
+            }));
+            setEvents(formattedEvents);
+        }
+    } catch (error) {
+        console.error("Eroare la încărcarea programărilor:", error);
+    } finally {
+        setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+
+  // 2. SALVAREA PROGRAMĂRILOR (Post to API)
+  const handleSelectSlot = async ({ start, end }) => {
     const title = window.prompt(
-      'Ce tip de eveniment dorești să adaugi?\n(Ex: Pauză, Programare, etc.)'
+      'Ce tip de eveniment dorești să adaugi?\n(Ex: Pauză, Programare Client X, etc.)'
     );
 
     if (title) {
       const isBlock = title.toLowerCase().includes('pauză') || title.toLowerCase().includes('blocat');
       
-      // 2. Adaugă noul eveniment la lista de evenimente
       const newEvent = {
-        start,
-        end,
         title,
+        start: start.toISOString(), // Trimitem ca string ISO
+        end: end.toISOString(),
         isBlock,
-        id: events.length + 1, // ID unic
       };
-      
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
 
-      // ********* AICI SE VA FACE APELUL API PENTRU SALVAREA EVENIMENTULUI ÎN BAZA DE DATE *********
-      console.log('Eveniment salvat (simulat):', newEvent);
+      try {
+        const response = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newEvent),
+        });
+
+        if (response.ok) {
+            // Dacă salvarea este OK, reîncărcăm calendarul
+            fetchAppointments(); 
+        } else {
+            alert('Eroare la salvarea programării!');
+        }
+      } catch (error) {
+          alert('Eroare de rețea la salvare.');
+      }
     }
   };
   
-  // Stilizarea Evenimentelor (pentru a diferenția Programările de Timpul Blocat)
+  // Stilizarea Evenimentelor
   const eventStyleGetter = (event) => {
     const style = {
-      backgroundColor: event.isBlock ? '#e64c3c' : '#007bff', // Roșu pentru blocaj, Albastru pentru programare
+      backgroundColor: event.isBlock ? '#e64c3c' : '#007bff', 
       borderRadius: '5px',
       color: 'white',
       border: '0px',
@@ -69,6 +90,10 @@ export default function PartnerCalendar() {
     };
   };
 
+
+  if (isLoading) {
+      return <div style={{height: '700px', textAlign: 'center', padding: '50px'}}>Se încarcă calendarul...</div>;
+  }
 
   return (
     <div style={{ height: '700px' }}>
@@ -90,10 +115,9 @@ export default function PartnerCalendar() {
           day: 'Zi',
           showMore: (total) => `+ ${total} alte`,
         }}
-        // Funcții pentru interacțiune
         onSelectEvent={(event) => alert(`${event.title} [${moment(event.start).format('HH:mm')} - ${moment(event.end).format('HH:mm')}]`)}
-        onSelectSlot={handleSelectSlot} // Apelăm funcția de adăugare eveniment
-        eventPropGetter={eventStyleGetter} // Aplicăm stiluri diferite
+        onSelectSlot={handleSelectSlot} 
+        eventPropGetter={eventStyleGetter} 
       />
     </div>
   );

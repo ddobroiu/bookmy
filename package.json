@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start -p $PORT",
-    "lint": "eslint",
-    "postinstall": "npx --yes @tailwindcss/oxide install"
+    "lint": "eslint"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

@@ -1,23 +1,23 @@
-// /src/app/dashboard/calendar/page.js (COD COMPLET FINAL)
+// /src/app/dashboard/calendar/page.js (FIX FINAL)
 
 'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import PartnerCalendar from '../../../components/PartnerCalendar';
-// CORECTAT: Folosim alias-ul @/
-import { findSalonStaff } from '@/db'; 
+import { findSalonStaff } from '@/db'; // Importăm funcția de găsire staff
 
 // Componentă pentru a simula filtrarea calendarului
 const CalendarWithStaffFilter = () => {
     const [staffList, setStaffList] = useState([]);
-    const [selectedStaffId, setSelectedStaffId] = useState('all'); // 'all' pentru toți
+    const [selectedStaffId, setSelectedStaffId] = useState('all'); 
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
-    // Încarcă lista de angajați
+    // 1. Funcția de bază pentru a prelua angajații
     const fetchStaff = useCallback(async () => {
         setIsLoadingStaff(true);
         try {
-            // Aici ar trebui să ai un apel API real, dar folosim funcția din db.js
-            const staffData = findSalonStaff('salon-de-lux-central'); // Folosim ID-ul de test
+            // Folosim findSalonStaff (simulare DB)
+            const staffData = findSalonStaff('salon-de-lux-central'); 
             
             // Adăugăm opțiunea "Toți"
             setStaffList([{ id: 'all', name: 'Toți Angajații' }, ...staffData]);
@@ -26,13 +26,17 @@ const CalendarWithStaffFilter = () => {
         } finally {
             setIsLoadingStaff(false);
         }
-    }, []);
+    }, []); // Dependență goală, se rulează o singură dată
 
+    // 2. Apelăm funcția corectă la încărcarea componentei
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        // CORECTAT: Apelăm funcția fetchStaff, nu fetchData
+        fetchStaff(); 
+    }, [fetchStaff]);
     
-    // În Dashboard, nu afișăm doar Calendarul.
+    
+    // ... restul codului rămâne neschimbat (return, filtre, etc.) ...
+    
     return (
         <div style={{ padding: '0 20px', maxWidth: '1600px', margin: '0 auto' }}>
             <h1>Calendar Programări</h1>

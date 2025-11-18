@@ -48,14 +48,15 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         setSelectedTime(null); 
         
         try {
-            // NOU: Apelăm API Route-ul Slots (care folosește logica din backend)
-            // const response = await fetch(`/api/slots?date=${date}&staffId=${staffId}&serviceId=${serviceId}`);
-            // if (response.ok) { ... }
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/slots?date=${date}&staffId=${staffId}&serviceId=${serviceId}`);
             
-            // Folosim simularea locală până când API-ul este gata
-            const slots = await fetchAvailableSlots(serviceId, staffId, date);
-            
-            setAvailableSlots(slots);
+            if (response.ok) {
+                const slots = await response.json();
+                setAvailableSlots(slots);
+            } else {
+                console.error("Eroare la încărcarea sloturilor:", await response.text());
+                setAvailableSlots([]);
+            }
             setSelectedDate(date);
         } catch (error) {
             console.error("Eroare la încărcarea sloturilor:", error);

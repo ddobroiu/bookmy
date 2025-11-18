@@ -1,0 +1,112 @@
+/* /app/search/search.module.css */
+
+.primaryColor {
+  --primary-color: #007bff;
+}
+
+.searchLayout {
+  display: flex;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
+  min-height: 80vh; /* Asigură că pagina are înălțime */
+}
+
+.sidebar {
+  width: 250px;
+  padding: 20px;
+  margin-right: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.filterGroup {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.filterGroup h3 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.filterOption {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.mainContent {
+  flex-grow: 1;
+}
+
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.resultsHeader h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.sortSelect {
+  padding: 8px 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.salonCard {
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: flex-start;
+  transition: box-shadow 0.2s;
+}
+
+.salonCard:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.salonImage {
+  width: 100px;
+  height: 100px;
+  margin-right: 15px;
+  border-radius: 6px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+
+.salonDetails {
+  flex-grow: 1;
+}
+
+.salonTitle {
+  font-size: 20px;
+  color: var(--primary-color);
+  margin: 0 0 5px 0;
+}
+
+.salonRating {
+  font-size: 14px;
+  color: orange;
+  margin-bottom: 10px;
+}
+
+.bookButton {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}

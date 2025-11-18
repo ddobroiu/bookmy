@@ -1,0 +1,212 @@
+/* /app/dashboard/onboarding/onboarding.module.css */
+
+.onboardingContainer {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #f7f9fc;
+    border-radius: 12px;
+}
+
+.mainTitle {
+    text-align: center;
+    color: #1c2e40;
+    margin-bottom: 40px;
+}
+
+.subtitle {
+    margin-bottom: 25px;
+    color: #555;
+    font-size: 15px;
+}
+
+/* -------------------------------------- */
+/* Step Indicator */
+/* -------------------------------------- */
+
+.stepIndicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.step {
+    flex-grow: 1;
+    text-align: center;
+    position: relative;
+    color: #999;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 60%;
+    width: 80%;
+    height: 2px;
+    background-color: #eee;
+    z-index: 1;
+}
+
+.step.active {
+    color: #007bff;
+}
+
+.step.completed {
+    color: #1aa858; /* Verde */
+}
+
+.stepLabel {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+/* -------------------------------------- */
+/* Form Card */
+/* -------------------------------------- */
+
+.formCard {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    min-height: 300px;
+}
+
+.stepTitle {
+    font-size: 24px;
+    color: #1c2e40;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.inputField {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.summaryText {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+/* -------------------------------------- */
+/* Servicii Formular (Dynamic) */
+/* -------------------------------------- */
+
+.serviceItem {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+}
+
+.serviceInput {
+    flex-grow: 1.5;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.servicePriceInput {
+    flex-grow: 0.5;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.serviceDurationSelect {
+    flex-grow: 0.5;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.removeButton {
+    background-color: #e64c3c;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.removeButton:hover {
+    background-color: #c0392b;
+}
+
+.addButton {
+    background-color: #1aa858; /* Verde */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin-top: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.addButton:hover {
+    background-color: #167e42;
+}
+
+
+/* -------------------------------------- */
+/* Navigare */
+/* -------------------------------------- */
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.backButton {
+    padding: 12px 25px;
+    background-color: #ccc;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.nextButton {
+    padding: 12px 25px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.nextButton:hover {
+    background-color: #0056b3;
+}

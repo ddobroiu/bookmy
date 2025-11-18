@@ -1,0 +1,86 @@
+/* /app/dashboard/calendar.css */
+
+/* -------------------------------------- */
+/* 1. Reset și Culori de Bază */
+/* -------------------------------------- */
+
+/* Culoarea principală Booksy */
+:root {
+  --rbc-primary: #007bff; 
+  --rbc-hover-bg: #e6f0ff;
+  --rbc-border: #eee;
+  --rbc-selected: #007bff;
+}
+
+/* Aplicăm stilurile pe componenta calendar */
+.rbc-calendar {
+  font-family: inherit;
+  border: 1px solid var(--rbc-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* -------------------------------------- */
+/* 2. Header și Navigație */
+/* -------------------------------------- */
+
+.rbc-toolbar {
+  padding: 15px 20px !important;
+  border-bottom: 1px solid var(--rbc-border);
+  background-color: #f7f9fc; /* Fundal ușor diferit */
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 0;
+}
+
+.rbc-btn-group button {
+  background-color: white;
+  border: 1px solid var(--rbc-border) !important;
+  color: #555;
+  border-radius: 4px !important;
+  transition: all 0.2s;
+}
+
+.rbc-btn-group button:hover {
+  background-color: var(--rbc-hover-bg);
+  color: var(--rbc-primary);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--rbc-primary) !important;
+  color: white !important;
+  border-color: var(--rbc-primary) !important;
+}
+
+/* -------------------------------------- */
+/* 3. Evenimente și Celule */
+/* -------------------------------------- */
+
+/* Titlul Zilei și Celula */
+.rbc-header {
+  padding: 8px 0;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 1px solid var(--rbc-border);
+}
+
+/* Eveniment Calendar (Programare) */
+.rbc-event {
+  background-color: var(--rbc-primary) !important;
+  border: none !important;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+
+.rbc-event:hover {
+  opacity: 1;
+}
+
+/* Sloturile libere (selecția) */
+.rbc-slot-selection {
+  background-color: var(--rbc-hover-bg) !important;
+  border: 2px dashed var(--rbc-selected) !important;
+}

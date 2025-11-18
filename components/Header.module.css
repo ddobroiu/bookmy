@@ -1,0 +1,53 @@
+/* /components/Header.module.css */
+
+.primaryColor {
+  /* Variabila CSS pentru a păstra consistența */
+  --primary-color: #007bff;
+}
+
+.header {
+  background-color: white;
+  padding: 10px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--primary-color);
+}
+
+.headerInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.buttonBase {
+  padding: 10px 20px;
+  margin-left: 15px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid;
+  font-weight: 600;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.loginBtn {
+  composes: buttonBase; /* Moștenim stilurile de bază */
+  background-color: transparent;
+  color: #333;
+  border-color: #ccc;
+}
+
+.registerBtn {
+  composes: buttonBase; /* Moștenim stilurile de bază */
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}

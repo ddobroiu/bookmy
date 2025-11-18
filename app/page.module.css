@@ -1,0 +1,78 @@
+/* /app/page.module.css (COD CORECTAT) */
+
+/* Definirea variabilei CSS la nivelul containerului principal */
+.homeContainer {
+  --primary-color: #007bff; /* Mutată aici */
+  padding: 50px 0;
+  text-align: center;
+}
+
+.searchBox {
+  background-color: white;
+  padding: 50px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 50px auto;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.tagline {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.searchForm {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.inputField {
+  padding: 15px;
+  width: calc(33% - 15px);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.searchButton {
+  padding: 15px 30px;
+  /* Folosim variabila definita in .homeContainer */
+  background-color: var(--primary-color); 
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+  width: calc(33% - 15px);
+}
+
+.categoriesSection {
+  margin-top: 80px;
+}
+
+.categoryCard {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.categoryCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,17 @@
+/* /app/global.css */
+body {
+  margin: 0;
+  padding: 0;
+  /* Folosim un font modern, Next.js folosește de obicei 'Inter', dar setarea de bază e ok. */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f7fa; /* Un fundal ușor albastru-gri pentru contrast */
+}
+
+/* Stiluri generale pentru container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}

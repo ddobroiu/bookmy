@@ -16,7 +16,7 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
  */
 
 const sessionOptions = {
-  password: process.env.SESSION_SECRET,
+  password: process.env.SESSION_SECRET.padEnd(32, 'x'), // asigură minim 32 caractere
   cookieName: 'bookmy_session', // Numele cookie-ului criptat
   cookieOptions: {
     // Setează secure: true în producție pentru a trimite cookie-ul doar prin HTTPS

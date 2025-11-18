@@ -1,19 +1,28 @@
-
-import { HeartIcon } from '@heroicons/react/24/solid'
-
-export default function Footer(){
+export default function Footer() {
   return (
-    <footer className="mt-16 py-10 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
-      <div className="container-custom flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <HeartIcon className="w-5 h-5 text-pink-300" />
-          <span>Bookmy</span>
-        </div>
-        <div className="flex items-center gap-6 text-sm">
-          <a href="https://github.com/ddobroiu/bookmy" target="_blank" rel="noopener" className="hover:text-pink-200 transition">GitHub</a>
-          <a href="mailto:contact@bookmy.app" className="hover:text-pink-200 transition">Contact</a>
-        </div>
-        <div className="text-xs text-white/80">© {new Date().getFullYear()} Bookmy — Built with <span className="text-pink-300">♥</span></div>
+    <footer className="py-6 md:px-8 md:py-0">
+      <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+        <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
+          Built by{" "}
+          <a
+            href="https://github.com/ddobroiu"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium underline underline-offset-4"
+          >
+            ddobroiu
+          </a>
+          . The source code is available on{" "}
+          <a
+            href="https://github.com/ddobroiu/bookmy"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium underline underline-offset-4"
+          >
+            GitHub
+          </a>
+          .
+        </p>
       </div>
     </footer>
   )

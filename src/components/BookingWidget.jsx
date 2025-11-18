@@ -1,4 +1,4 @@
-// /src/components/BookingWidget.jsx (COD COMPLET FINAL)
+// /components/BookingWidget.jsx (COD COMPLET FINAL)
 
 'use client';
 
@@ -15,15 +15,14 @@ const mockStaff = [
     { id: 103, name: 'Orice Angajat Disponibil', available: true, preferred: true },
 ];
 
-// Simulare de date pentru sloturile libere (Aceasta ar fi /api/slots)
+// Logica de simulare a sloturilor (înlocuiește funcția locală din versiunile anterioare)
 const fetchAvailableSlots = (serviceId, staffId, date) => {
-    // Logica de returnare a sloturilor bazată pe angajat (simulare)
+    // Simulare API Call NOU: Aici ar fi apelul GET la /api/slots
     const baseSlots = staffId === 102 ? ['10:30', '11:30', '16:00'] : ['09:00', '10:00', '14:30', '15:30'];
     
-    // În producție, aici ar fi logică complexă de verificare a programărilor și a orarului salonului
     return baseSlots.map(time => ({ 
         time, 
-        available: Math.random() > 0.1 // Simulează ocuparea
+        available: Math.random() > 0.1 
     })); 
 };
 
@@ -48,18 +47,28 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         setIsFetchingSlots(true);
         setSelectedTime(null); 
         
-        // Simulare API Call (Aici ar trebui să apelezi /api/slots)
-        const slots = await fetchAvailableSlots(serviceId, staffId, date);
-        
-        setAvailableSlots(slots);
-        setSelectedDate(date);
-        setIsFetchingSlots(false);
+        try {
+            // NOU: Apelăm API Route-ul Slots (care folosește logica din backend)
+            // const response = await fetch(`/api/slots?date=${date}&staffId=${staffId}&serviceId=${serviceId}`);
+            // if (response.ok) { ... }
+            
+            // Folosim simularea locală până când API-ul este gata
+            const slots = await fetchAvailableSlots(serviceId, staffId, date);
+            
+            setAvailableSlots(slots);
+            setSelectedDate(date);
+        } catch (error) {
+            console.error("Eroare la încărcarea sloturilor:", error);
+            setAvailableSlots([]);
+        } finally {
+            setIsFetchingSlots(false);
+        }
     }, []);
 
     // Logica de navigare la Pasul 3 (Data/Ora)
     const handleStaffSelect = (staffMember) => {
         setSelectedStaff(staffMember);
-        setCurrentStep(3); 
+        setCurrentStep(3); // Trecem la Pasul 3 (Data/Ora)
         loadSlots(selectedDate, selectedService.id, staffMember.id); 
     };
 
@@ -89,13 +98,13 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         };
         
         try {
-            // AICI ARE LOC APELUL FINAL LA /api/booking/route.js
+            // APEL FINAL LA /api/booking/route.js
             const response = { ok: true }; // Simulare succes
             // const response = await fetch('/api/booking', { ... }); 
 
             if (response.ok) {
                 setBookingSuccess(true);
-                setCurrentStep(5); // Trecem la pasul final de confirmare
+                setCurrentStep(5); 
             } else {
                 alert('Eroare la salvarea programării!');
             }
@@ -164,7 +173,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
     );
 
 
-    // Pasul 3: Selecția Data/Ora (Era Pasul 2)
+    // Pasul 3: Selecția Data/Ora
     const renderDateTimeStep = () => (
         <div>
             <h3 className={styles.stepHeader} onClick={() => setCurrentStep(2)} style={{cursor: 'pointer'}}>
@@ -175,7 +184,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
             <input 
                 type="date"
                 value={selectedDate}
-                // NOU: Trimitem și ID-ul Angajatului la loadSlots
+                // Trimitem ID-ul Angajatului la loadSlots
                 onChange={(e) => loadSlots(e.target.value, selectedService.id, selectedStaff.id)}
                 className={styles.inputField}
                 style={{marginBottom: '20px'}}
@@ -216,7 +225,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         </div>
     );
 
-    // Pasul 4 (Era Pasul 3): Detalii Client
+    // Pasul 4 (Detalii Client)
     const renderClientDetailsStep = () => (
         <div>
             <h3 className={styles.stepHeader} onClick={() => setCurrentStep(3)} style={{cursor: 'pointer'}}>

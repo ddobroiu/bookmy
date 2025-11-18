@@ -1,8 +1,8 @@
-// /src/app/api/salon/route.js (COD FINAL)
+// /src/app/api/salon/route.js (FIX FINAL PATH)
 
 import { NextResponse } from 'next/server';
-// CORECTAT: Ieși din /salon, /api, /app (3 nivele)
-import { getSalonDetails, findSalonServices } from '../../../db'; 
+// CORECTAT: Folosim alias-ul @/
+import { getSalonDetails, findSalonServices } from '@/db'; 
 
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
@@ -12,7 +12,6 @@ export async function GET(request) {
         return NextResponse.json({ message: "Slug missing" }, { status: 400 });
     }
 
-    // Preluarea datelor de salon și servicii
     const salon = getSalonDetails(slug);
     
     if (!salon) {

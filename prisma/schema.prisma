@@ -30,7 +30,7 @@ model User {
 
 enum Role {
   CLIENT
-  PARTNER
+  PARTENER
 }
 
 // 2. Modelul Salon (Afacere) - A fost eliminată ambiguitatea
@@ -42,20 +42,28 @@ model Salon {
   category     String
   scheduleJson String @db.Text // Orarul de lucru (salvat ca JSON string)
   
-  staff      Staff[]
+  // NOU: Relația bidirecțională cu Staff (Lista de angajați)
+  staff        Staff[] 
+  
   // Relația cu Programările este numită explicit
   receivedAppointments Appointment[] @relation(name: "SalonAppointments") 
 
   @@map("salons")
 }
 
-// 3. Modelul Staff/Angajat
+// 3. Modelul Staff/Angajat - Corectat pentru relația bidirecțională
 model Staff {
   id         String @id @default(uuid())
-  salonId    String
+  
+  // Câmpul Foreign Key (FK)
+  salonId    String 
+  
   name       String
   role       String
   
+  // RELAȚIA INVERSĂ: Angajatul aparține unui Salon
+  salon      Salon @relation(fields: [salonId], references: [id]) 
+
   // Programările angajatului
   appointments Appointment[] @relation(name: "StaffAppointments") 
   
@@ -72,14 +80,14 @@ model Appointment {
   
   // Relații
   salonId      String
-  // Legătura cu salonul este SalonAppointments
+  // Legătura cu salonului
   salon        Salon     @relation(name: "SalonAppointments", fields: [salonId], references: [id]) 
   
   clientId     String?
   client       User?     @relation(fields: [clientId], references: [id])
   
   staffId      String
-  // Legătura cu staff-ul este StaffAppointments
+  // Legătura cu staff-ul
   staff        Staff     @relation(name: "StaffAppointments", fields: [staffId], references: [id]) 
 
   @@map("appointments")

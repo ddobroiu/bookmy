@@ -1,37 +1,133 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useToast } from '../../context/ToastContext';
 
 export default function ProfileClientPage({ initialUserData }) {
   const [userData, setUserData] = useState(initialUserData);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedData, setEditedData] = useState(initialUserData);
+  const { addToast } = useToast();
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditedData(userData); // Initialize editedData with current userData
+  };
+
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    setEditedData(userData); // Revert changes
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditedData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveClick = async () => {
+    if (!editedData.name || !editedData.phoneNumber) {
+      addToast('Numele și numărul de telefon sunt obligatorii!', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editedData.name,
+          phoneNumber: editedData.phoneNumber,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Eroare la actualizarea profilului');
+      }
+
+      const updatedUser = await response.json();
+      setUserData(updatedUser);
+      setIsEditing(false);
+      addToast('Profil actualizat cu succes!', 'success');
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      addToast(error.message || 'Eroare la actualizarea profilului.', 'error');
+    }
+  };
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedData, setEditedData] = useState(initialUserData);
+  const { addToast } = useToast();
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Profilul Meu</h1>
       <div className="bg-white shadow-md rounded-lg p-6">
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Nume:</label>
-          <p className="text-gray-900">{userData.name}</p>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">Nume:</label>
+          {isEditing ? (
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={editedData.name}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          ) : (
+            <p className="text-gray-900">{userData.name}</p>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
           <p className="text-gray-900">{userData.email}</p>
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Număr de telefon:</label>
-          <p className="text-gray-900">{userData.phoneNumber || 'N/A'}</p>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phoneNumber">Număr de telefon:</label>
+          {isEditing ? (
+            <input
+              type="text"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={editedData.phoneNumber}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          ) : (
+            <p className="text-gray-900">{userData.phoneNumber || 'N/A'}</p>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Rol:</label>
           <p className="text-gray-900">{userData.role}</p>
         </div>
-        {/* Add an edit button later */}
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={() => alert('Funcționalitatea de editare va fi adăugată în curând!')}
-        >
-          Editează Profilul
-        </button>
+        {isEditing ? (
+          <div className="flex space-x-4">
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleSaveClick}
+            >
+              Salvează
+            </button>
+            <button
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleCancelClick}
+            >
+              Anulează
+            </button>
+          </div>
+        ) : (
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleEditClick}
+          >
+            Editează Profilul
+          </button>
+        )}
       </div>
     </div>
   );

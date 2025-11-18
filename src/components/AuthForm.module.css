@@ -1,0 +1,244 @@
+/* /components/AuthForm.module.css (COD COMPLET ȘI UNIFICAT) */
+
+/* -------------------------------------- */
+/* Culori & Variabile */
+/* -------------------------------------- */
+:root {
+    --primary-color: #007bff;
+    --success-color: #1aa858;
+    --danger-color: #e64c3c;
+    --light-hover: #e6f0ff;
+    --border-color: #ddd;
+}
+
+
+/* -------------------------------------- */
+/* Login / Register Styles */
+/* -------------------------------------- */
+
+.registerContainer {
+  max-width: 450px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.roleSelector {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.roleButton {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: all 0.2s;
+}
+
+.roleButton.active {
+  border-color: var(--primary-color);
+  background-color: var(--light-hover);
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.submitButton:disabled {
+  background-color: #a8cfff;
+  cursor: not-allowed;
+}
+
+.successMessage {
+  color: green;
+  margin-top: 20px;
+}
+
+.errorMessage {
+  color: red;
+  margin-top: 20px;
+}
+
+/* -------------------------------------- */
+/* Booking Widget Styles */
+/* -------------------------------------- */
+
+.bookingWidget {
+    margin-top: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.widgetHeader {
+    background-color: #f7f9fc;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1c2e40;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+}
+
+.widgetBody {
+    padding: 20px;
+}
+
+.stepHeader {
+    font-size: 20px;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.selectionItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.selectionItem:hover {
+    border-color: var(--primary-color);
+    background-color: var(--light-hover);
+}
+
+.serviceName {
+    font-weight: 600;
+}
+
+.servicePrice {
+    color: var(--success-color);
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+.chevron {
+    color: #ccc;
+}
+
+.summaryItem {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* -------------------------------------- */
+/* Slot Selection Styles */
+/* -------------------------------------- */
+
+.slotsGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px; /* Adaugat spatiu sub grid */
+}
+
+.slotButton {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.slotButton:hover:not(:disabled) {
+    background-color: var(--light-hover);
+    border-color: var(--primary-color);
+}
+
+.slotActive {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.slotDisabled {
+    background-color: #f0f0f0;
+    color: #bbb;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* -------------------------------------- */
+/* Navigation Buttons */
+/* -------------------------------------- */
+
+.nextButton {
+    /* Folosit pentru butonul Continuă */
+    width: 100%; 
+    padding: 12px 25px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.nextButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.finalButton {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--success-color); /* Verde finalizare */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.backButton {
+    background: none;
+    border: none;
+    color: #555;
+    margin-top: 10px;
+    cursor: pointer;
+}

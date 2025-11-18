@@ -1,13 +1,25 @@
-// /app/dashboard/onboarding/page.js (COD COMPLET)
+// /app/dashboard/onboarding/page.js (COD COMPLET ACTUALIZAT CU CATEGORII)
 
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCheckCircle, FaStore, FaListUl, FaClock, FaPlus, FaTrash } from 'react-icons/fa';
-import styles from './onboarding.module.css'; // Calea corectă: ./onboarding.module.css
+import styles from './onboarding.module.css'; 
 
 const steps = ['Detalii Afacere', 'Servicii & Prețuri', 'Program de Lucru', 'Finalizare'];
+
+// Lista fixă a categoriilor de afaceri
+const BUSINESS_CATEGORIES = [
+    { value: '', label: '— Alege Categoria —' },
+    { value: 'salon', label: 'Salon de Înfrumusețare' },
+    { value: 'barber', label: 'Frizerie / Barber Shop' },
+    { value: 'nails', label: 'Manichiură / Unghii' },
+    { value: 'massage', label: 'Masaj / Wellness' },
+    { value: 'waxing', label: 'Epilare / Cosmetica' },
+    { value: 'tattoo', label: 'Studio Tatuaje / Piercing' },
+];
+
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,19 +27,20 @@ export default function OnboardingPage() {
     name: '',
     slug: '', 
     address: '',
-    // Am inițializat cu un serviciu gol pentru a începe
+    category: '', // NOU: Categoria Afacerii
     services: [{ name: '', price: '', duration: '60' }], 
     schedule: {}
   });
   const router = useRouter();
 
   const handleNext = () => {
-    // Validare simplă pentru a nu trece mai departe cu un nume gol
-    if (currentStep === 0 && !formData.name) {
-      alert('Vă rugăm introduceți numele salonului.');
+    // Validare suplimentară NOUĂ: Categoria și Numele trebuie să fie completate
+    if (currentStep === 0 && (!formData.name || !formData.category)) {
+      alert('Vă rugăm introduceți numele salonului și selectați o categorie.');
       return;
     }
-    // Validare pentru Servicii: Asigură-te că există cel puțin un serviciu completat
+    
+    // Validare Servicii (Logica anterioară)
     if (currentStep === 1) {
         const hasValidService = formData.services.some(
             s => s.name && s.price && s.duration
@@ -46,27 +59,20 @@ export default function OnboardingPage() {
   };
   
   const handleSubmission = async () => {
-    alert('Simulare trimitere date salon către baza de date!');
+    alert('Simulare trimitere date afacere către baza de date!');
     console.log('Final Data:', formData);
 
-    // ********* AICI SE VA FACE APELUL API PENTRU CREAREA SALONULUI *********
-    
-    // Simulare: După creare, actualizăm starea de setup (Middleware va citi acest lucru)
+    // ... (Logica de salvare în DB și redirecționare) ...
     localStorage.setItem('salonSetup', 'true'); 
-    
-    // Deoarece Middleware-ul citește cookie-ul, nu localStorage.
-    // În producție, API-ul ar actualiza cookie-ul. Aici, redirecționarea funcționează.
-
     router.push('/dashboard'); 
   };
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // Când schimbăm numele sau adresa
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- LOGICA PENTRU SERVICII ---
+  // --- LOGICA PENTRU SERVICII (Fără modificări) ---
   const handleServiceChange = (index, e) => {
     const { name, value } = e.target;
     const newServices = formData.services.map((service, i) => {
@@ -99,8 +105,28 @@ export default function OnboardingPage() {
         return (
           <div className={styles.stepContent}>
             <h2 className={styles.stepTitle}><FaStore /> Detalii Afacere</h2>
+            
+            {/* NOU: Selector Categorie */}
             <div className={styles.formGroup}>
-              <label>Nume Salon</label>
+              <label>Categoria Afacerii</label>
+              <select 
+                  name="category" 
+                  value={formData.category} 
+                  onChange={handleInputChange} 
+                  className={styles.inputField} 
+                  required
+              >
+                  {BUSINESS_CATEGORIES.map(cat => (
+                      <option key={cat.value} value={cat.value} disabled={cat.value === ''}>
+                          {cat.label}
+                      </option>
+                  ))}
+              </select>
+            </div>
+            {/* Sfârșit NOU */}
+
+            <div className={styles.formGroup}>
+              <label>Nume Afacere</label>
               <input type="text" name="name" value={formData.name} onChange={handleInputChange} className={styles.inputField} required />
             </div>
             <div className={styles.formGroup}>
@@ -170,8 +196,9 @@ export default function OnboardingPage() {
         return (
           <div className={styles.stepContent}>
             <h2 className={styles.stepTitle}><FaCheckCircle style={{color: 'green'}} /> Finalizare</h2>
-            <p>Sunteți gata! Confirmați detaliile și publicați salonul.</p>
+            <p>Sunteți gata! Confirmați detaliile și publicați afacerea.</p>
             <p className={styles.summaryText}>Nume: <strong>{formData.name}</strong></p>
+            <p className={styles.summaryText}>Categorie: <strong>{BUSINESS_CATEGORIES.find(c => c.value === formData.category)?.label}</strong></p>
             <p className={styles.summaryText}>Adresă: <strong>{formData.address}</strong></p>
             <p className={styles.summaryText}>Servicii adăugate: <strong>{formData.services.filter(s => s.name).length}</strong></p>
           </div>
@@ -183,9 +210,9 @@ export default function OnboardingPage() {
 
   return (
     <div className={styles.onboardingContainer}>
-      <h1 className={styles.mainTitle}>Configurarea Salonului Tău</h1>
+      <h1 className={styles.mainTitle}>Configurarea Afacerii Tale</h1>
       
-      {/* Indicator de Pași */}
+      {/* Indicator de Pași (fără modificări) */}
       <div className={styles.stepIndicator}>
         {steps.map((step, index) => (
           <div key={index} className={`${styles.step} ${index === currentStep ? styles.active : index < currentStep ? styles.completed : ''}`}>
@@ -195,12 +222,12 @@ export default function OnboardingPage() {
         ))}
       </div>
 
-      {/* Conținutul Pasului */}
+      {/* Conținutul Pasului (fără modificări) */}
       <div className={styles.formCard}>
         {renderStepContent()}
       </div>
 
-      {/* Navigare */}
+      {/* Navigare (fără modificări) */}
       <div className={styles.navigation}>
         <button onClick={() => setCurrentStep(currentStep - 1)} disabled={currentStep === 0} className={styles.backButton}>
           Înapoi

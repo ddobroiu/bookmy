@@ -1,30 +1,28 @@
-// /app/login/page.js (COD COMPLET CU CALEA NOUĂ CSS)
+// /app/login/page.js (COD COMPLET CU CALEA ABSOLUTĂ @/)
 
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-// ATENȚIE: Noua cale: Ieși din /app/login (..) și intră în /components
-import styles from '../../components/AuthForm.module.css'; 
+import { useToast } from '../../context/ToastContext'; // Calea contextului
+// CORECTAT: FOLOSIM CALEA ABSOLUTĂ CĂTRE COMPONENTA COMUNĂ DE STILURI
+import styles from '@/components/AuthForm.module.css'; 
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
-
+    
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
@@ -32,7 +30,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         const userRole = data.user.role;
-        setMessage({ type: 'success', text: `Logare reușită! Rol: ${userRole}. Redirecționare...` });
+        showToast(`Logare reușită! Bine ai venit, ${userRole}.`, 'success'); 
 
         localStorage.setItem('userRole', userRole);
 
@@ -43,14 +41,11 @@ export default function LoginPage() {
         }
         
       } else {
-        setMessage({ 
-          type: 'error', 
-          text: data.message || 'Credențiale invalide.' 
-        });
+        showToast(data.message || 'Credențiale invalide.', 'error');
       }
     } catch (error) {
       console.error('Frontend login error:', error);
-      setMessage({ type: 'error', text: 'A apărut o eroare de rețea.' });
+      showToast('A apărut o eroare de rețea. Vă rugăm reîncercați.', 'error');
     } finally {
       setLoading(false);
     }
@@ -98,16 +93,9 @@ export default function LoginPage() {
           {loading ? 'Se autentifică...' : 'Logare'}
         </button>
       </form>
-
-      {/* Mesaje de feedback */}
-      {message.text && (
-        <p className={message.type === 'success' ? styles.successMessage : styles.errorMessage}>
-          {message.text}
-        </p>
-      )}
-
+      
       <p style={{marginTop: '20px'}}>
-          Nu ai cont? <a href="/register" style={{color: '#007bff'}}>Înregistrează-te</a>
+          Nu ai cont? <a href="/inregistrare-client" style={{color: '#007bff'}}>Înregistrează-te</a>
       </p>
 
       {/* Instrucțiuni de Test */}

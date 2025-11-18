@@ -1,0 +1,89 @@
+/* /components/AIChat.module.css */
+
+.chatContainer {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatHeader {
+    background-color: #007bff;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.messageArea {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f7f9fc;
+    border-bottom: 1px solid #eee;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+    padding: 10px;
+    border-radius: 15px;
+    line-height: 1.4;
+}
+
+.botMessage {
+    background-color: white;
+    align-self: flex-start;
+    border-top-left-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.userMessage {
+    background-color: #e6f0ff; /* Albastru deschis BooksApp */
+    align-self: flex-end;
+    margin-left: auto;
+    border-top-right-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.inputArea {
+    display: flex;
+    padding: 10px;
+    background-color: white;
+}
+
+.chatInput {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    margin-right: 10px;
+}
+
+.sendButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.sendButton:hover {
+    background-color: #0056b3;
+}

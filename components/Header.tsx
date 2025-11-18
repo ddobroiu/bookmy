@@ -4,6 +4,7 @@ import { Button } from './ui/button'
 import {
   ArrowLeftOnRectangleIcon,
   ArrowRightOnRectangleIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline'
 
 export default function Header() {
@@ -70,14 +71,14 @@ export default function Header() {
                   {session.user?.email}
                 </span>
                 <Button variant="outline" onClick={() => signOut()}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <ArrowRightOnRectangleIcon className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
               </>
             ) : (
               <Button asChild>
                 <Link href="/auth/signin">
-                  <LogIn className="mr-2 h-4 w-4" />
+                  <UserIcon className="mr-2 h-4 w-4" />
                   Login
                 </Link>
               </Button>

@@ -18,7 +18,7 @@ generator client {
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  name         String // Numele utilizatorului
+  name         String? // Numele utilizatorului (opțional pentru migrare)
   phoneNumber  String? // Numărul de telefon al utilizatorului
   passwordHash String // Parolă criptată
   role         Role      @default(CLIENT) // CLIENT sau PARTENER

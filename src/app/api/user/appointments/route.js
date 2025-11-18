@@ -1,19 +1,21 @@
+// src/app/api/user/appointments/route.js
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
-import prisma from '@/lib/prisma';
+import { getSession } from '../../../../lib/session';
+import prisma from '../../../../lib/prisma';
 
-export async function GET(request) {
+export async function GET() {
   const session = await getSession();
 
   if (!session || !session.userId) {
-    // În producție, sesiunea ar trebui verificată mai riguros, posibil printr-un middleware.
-    // Aici, pentru dezvoltare, permitem accesul dacă nu există sesiune,
-    // dar returnăm un array gol sau un mesaj de eroare.
-    return NextResponse.json({ error: 'Neautorizat. Trebuie să fii autentificat pentru a vedea programările.' }, { status: 401 });
+    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 });
+  }
+
+  if (session.role !== 'CLIENT') {
+    return NextResponse.json({ error: 'Doar clienții pot vedea programările.' }, { status: 403 });
   }
 
   try {
-    const userAppointments = await prisma.appointment.findMany({
+    const appointments = await prisma.appointment.findMany({
       where: {
         clientId: session.userId,
       },
@@ -22,7 +24,6 @@ export async function GET(request) {
           select: {
             name: true,
             slug: true,
-            address: true,
           },
         },
         staff: {
@@ -32,13 +33,13 @@ export async function GET(request) {
         },
       },
       orderBy: {
-        start: 'desc', // Afișează programările cele mai recente primele
+        start: 'desc',
       },
     });
 
-    return NextResponse.json(userAppointments);
+    return NextResponse.json(appointments);
   } catch (error) {
-    console.error('Eroare la preluarea programărilor utilizatorului:', error);
-    return NextResponse.json({ error: 'A apărut o eroare pe server la preluarea programărilor.' }, { status: 500 });
+    console.error('Eroare la preluarea programărilor:', error);
+    return NextResponse.json({ error: 'Eroare la preluarea programărilor' }, { status: 500 });
   }
 }

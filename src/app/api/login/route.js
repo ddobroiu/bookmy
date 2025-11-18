@@ -1,8 +1,9 @@
 // /src/app/api/login/route.js
 
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Importăm Prisma Client
-import * as bcrypt from 'bcryptjs'; // Presupunând că folosești bcrypt pentru parolă
+import prisma from '@/lib/prisma';
+import * as bcrypt from 'bcryptjs';
+import { getSession } from '@/lib/session'; // Importă getSession din iron-session
 
 export async function POST(request) {
   try {
@@ -15,60 +16,42 @@ export async function POST(request) {
     // 1. Căutare Utilizator în Baza de Date
     const user = await prisma.user.findUnique({
       where: { email: email },
-      // Selectăm datele esențiale, inclusiv parola criptată
-      select: { 
-          id: true, 
-          role: true, 
-          salonSetup: true, 
-          passwordHash: true 
-      } 
     });
 
     if (!user) {
       return NextResponse.json({ message: 'Credențiale invalide.' }, { status: 401 });
     }
     
-    // 2. Verificarea Parolei
-    // ATENȚIE: Aici se verifică parola. În producție, folosești bcrypt.
-    // const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    // 2. Verificarea Parolei folosind bcrypt
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     
-    // Simulare de succes (pentru că nu am integrat bcrypt)
-    const isPasswordValid = password === '123'; 
-
     if (!isPasswordValid) {
       return NextResponse.json({ message: 'Credențiale invalide.' }, { status: 401 });
     }
 
-    // 3. Logare reușită: Pregătim răspunsul și cookie-urile
-    const response = NextResponse.json({ 
+    // 3. Crearea și Salvarea Sesiunii cu iron-session
+    const session = await getSession();
+    session.user = {
+        id: user.id,
+        email: user.email, // Stocăm și email-ul pentru acces rapid
+        role: user.role,
+        salonSetup: user.salonSetup,
+    };
+    await session.save(); // Salvează datele în cookie-ul de sesiune criptat
+
+    // 4. Logare reușită: Trimitem răspunsul
+    return NextResponse.json({ 
       message: 'Logare reușită!',
       user: {
           id: user.id,
           email: user.email,
-          role: user.role.toLowerCase(), // Ex: 'partner'
+          role: user.role.toLowerCase(),
           salonSetup: user.salonSetup,
       }
     }, { status: 200 });
-    
-    // 4. Setarea cookie-urilor de autentificare (pentru middleware)
-    response.cookies.set('user-role', user.role.toLowerCase(), { 
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
-      maxAge: 60 * 60 * 24 * 7, // 1 săptămână
-      path: '/',
-    });
-    response.cookies.set('salon-setup', user.salonSetup ? 'true' : 'false', { 
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
-      maxAge: 60 * 60 * 24 * 7, 
-      path: '/',
-    });
-
-    return response;
 
   } catch (error) {
-    console.error('Login Error (Prisma):', error);
-    // În producție, erorile de bază de date vor fi afișate aici.
+    console.error('Login Error:', error);
     return NextResponse.json({ message: 'Eroare internă de server.' }, { status: 500 });
   }
 }

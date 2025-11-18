@@ -72,21 +72,34 @@ export async function POST(request) {
         }
 
         // Creează recenzia și actualizează rating-ul salonului într-o singură tranzacție
-        const [, newReview] = await prisma.$transaction([
-            prisma.salon.update({
+        const newReview = await prisma.$transaction(async (tx) => {
+            // Pas 1: Obține salonul curent pentru a avea datele de rating
+            const salon = await tx.salon.findUnique({
+                where: { id: salonId },
+                select: { averageRating: true, reviewCount: true },
+            });
+
+            if (!salon) {
+                throw new Error('Salonul nu a fost găsit.');
+            }
+
+            // Pas 2: Calculează noul rating mediu
+            const { averageRating, reviewCount } = salon;
+            const newReviewCount = reviewCount + 1;
+            const newAverageRating =
+                (averageRating * reviewCount + parseInt(rating, 10)) / newReviewCount;
+
+            // Pas 3: Actualizează salonul cu noile valori
+            await tx.salon.update({
                 where: { id: salonId },
                 data: {
-                    reviewCount: { increment: 1 },
-                    averageRating: {
-                        // Formula pentru a recalcula media
-                        set: (await prisma.review.aggregate({
-                            _avg: { rating: true },
-                            where: { salonId },
-                        }))._avg.rating,
-                    },
+                    reviewCount: newReviewCount,
+                    averageRating: newAverageRating,
                 },
-            }),
-            prisma.review.create({
+            });
+
+            // Pas 4: Creează recenzia
+            const createdReview = await tx.review.create({
                 data: {
                     rating: parseInt(rating, 10),
                     comment,
@@ -94,8 +107,10 @@ export async function POST(request) {
                     salonId,
                     appointmentId,
                 },
-            }),
-        ]);
+            });
+
+            return createdReview;
+        });
 
         return NextResponse.json(newReview, { status: 201 });
     } catch (error) {

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
+import { motion } from 'framer-motion'
 import Container from '../../components/Container'
 import Input from '../../components/Input'
 import Button from '../../components/Button'
@@ -40,27 +41,82 @@ export default function RegisterPage() {
       <Header />
       <AuthCard title="Creează cont" subtitle={roleFromQuery === 'OWNER' ? 'Cont pentru proprietari' : 'Cont pentru clienți'}>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" icon={<UserIcon className="w-5 h-5" />} />
-            <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<EnvelopeIcon className="w-5 h-5" />} />
-            <Input
-              label="Parolă"
-              value={password}
-              onChange={setPassword}
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Alege o parolă sigură"
-              icon={<LockClosedIcon className="w-5 h-5" />}
-              className="mb-2"
-            />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-xs text-indigo-500 mb-2 transition hover:underline">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1, duration: 0.6 }}
+            >
+              <Input label="Nume complet" value={name} onChange={setName} placeholder="Ex: Maria Popescu" icon={<UserIcon className="w-5 h-5" />} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 0.6 }}
+            >
+              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<EnvelopeIcon className="w-5 h-5" />} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.3, duration: 0.6 }}
+            >
+              <Input
+                label="Parolă"
+                value={password}
+                onChange={setPassword}
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Alege o parolă sigură"
+                icon={<LockClosedIcon className="w-5 h-5" />}
+                className="mb-2"
+              />
+            </motion.div>
+
+            <motion.button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-sm text-indigo-300 hover:text-pink-300 transition font-medium"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               {showPassword ? 'Ascunde parola' : 'Arată parola'}
-            </button>
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-500">Ai deja cont? <a href="/auth/signin" className="text-pink-600 font-semibold hover:underline">Autentifică-te</a></div>
-              <Button type="submit">{status === 'sending' ? 'Se înregistrează...' : 'Creează cont'}</Button>
-            </div>
+            </motion.button>
+
+            <motion.div
+              className="flex items-center justify-between mt-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.4, duration: 0.6 }}
+            >
+              <div className="text-sm text-white/80">Ai deja cont? <a href="/auth/signin" className="text-pink-300 font-semibold hover:text-pink-200 transition">Autentifică-te</a></div>
+              <Button type="submit" disabled={status === 'sending'}>
+                {status === 'sending' ? (
+                  <motion.div
+                    className="flex items-center gap-2"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                    Se înregistrează...
+                  </motion.div>
+                ) : (
+                  'Creează cont'
+                )}
+              </Button>
+            </motion.div>
           </form>
 
-          {status === 'error' && <p className="mt-3 text-red-600 font-semibold">A apărut o eroare la înregistrare.</p>}
+          {status === 'error' && (
+            <motion.p
+              className="mt-4 text-red-300 font-semibold text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              A apărut o eroare la înregistrare.
+            </motion.p>
+          )}
       </AuthCard>
     </div>
   )

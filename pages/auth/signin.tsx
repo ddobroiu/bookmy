@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import dynamic from 'next/dynamic'
+import { motion } from 'framer-motion'
 import Container from '../../components/Container'
 
 import Input from '../../components/Input'
@@ -40,26 +41,73 @@ export default function SignInPage() {
       <Header />
       <AuthCard title="Autentificare" subtitle="Conectează-te cu email și parolă">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<EnvelopeIcon className="w-5 h-5" />} />
-          <Input
-            label="Parolă"
-            value={password}
-            onChange={setPassword}
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••"
-            icon={<LockClosedIcon className="w-5 h-5" />}
-            className="mb-2"
-          />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-xs text-indigo-500 mb-2 transition hover:underline">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.6 }}
+          >
+            <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="nume@exemplu.com" icon={<EnvelopeIcon className="w-5 h-5" />} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.6 }}
+          >
+            <Input
+              label="Parolă"
+              value={password}
+              onChange={setPassword}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••"
+              icon={<LockClosedIcon className="w-5 h-5" />}
+              className="mb-2"
+            />
+          </motion.div>
+
+          <motion.button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-sm text-indigo-300 hover:text-pink-300 transition font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             {showPassword ? 'Ascunde parola' : 'Arată parola'}
-          </button>
+          </motion.button>
+
           {status === 'error' && (
-            <p className="text-sm text-red-600 font-semibold">Autentificare eșuată. Verifică email/parolă.</p>
+            <motion.p
+              className="text-sm text-red-300 font-semibold text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              Autentificare eșuată. Verifică email/parolă.
+            </motion.p>
           )}
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-gray-500"><a href="/auth/register" className="text-pink-600 font-semibold hover:underline">Creează cont</a></div>
-            <Button type="submit">{status === 'sending' ? 'Se autentifică...' : 'Autentificare'}</Button>
-          </div>
+
+          <motion.div
+            className="flex items-center justify-between mt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3, duration: 0.6 }}
+          >
+            <div className="text-sm text-white/80"><a href="/auth/register" className="text-pink-300 font-semibold hover:text-pink-200 transition">Creează cont</a></div>
+            <Button type="submit" disabled={status === 'sending'}>
+              {status === 'sending' ? (
+                <motion.div
+                  className="flex items-center gap-2"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                  Se autentifică...
+                </motion.div>
+              ) : (
+                'Autentificare'
+              )}
+            </Button>
+          </motion.div>
         </form>
       </AuthCard>
     </div>

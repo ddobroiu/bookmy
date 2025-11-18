@@ -4,10 +4,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Importă Link
 import { useToast } from '../../context/ToastContext'; 
 import styles from '@/components/AuthForm.module.css'; 
-// ATENȚIE: Importul către db.js a fost eliminat pentru a permite build-ul
-
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,11 +31,10 @@ export default function LoginPage() {
       if (response.ok) {
         const userRole = data.user.role;
         
-        showToast(`Logare reușită! Bine ai venit, ${userRole}.`, 'success'); 
+        showToast(`Logare reușită! Bine ai venit, ${data.user.name || userRole}.`, 'success'); 
 
         localStorage.setItem('userRole', userRole);
 
-        // Redirecționare bazată pe rol
         if (userRole === 'partner') {
           router.push('/dashboard');
         } else {
@@ -66,6 +64,7 @@ export default function LoginPage() {
           <input
             type="email"
             id="email"
+            className={styles.inputField} // Adăugat clasa
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -78,6 +77,7 @@ export default function LoginPage() {
           <input
             type="password"
             id="password"
+            className={styles.inputField} // Adăugat clasa
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -88,6 +88,11 @@ export default function LoginPage() {
           {loading ? 'Se încarcă...' : 'Autentificare'}
         </button>
       </form>
+
+      {/* Link către înregistrare */}
+      <div className={styles.authLink}>
+        Nu ai un cont? <Link href="/inregistrare-client">Înregistrează-te aici</Link>
+      </div>
     </div>
   );
 }

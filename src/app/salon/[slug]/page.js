@@ -1,19 +1,45 @@
-// /src/app/salon/[slug]/page.js (COD COMPLET FINAL)
+// /src/app/salon/[slug]/page.js (COD COMPLET FINAL FĂRĂ DB.JS)
 
 import { FaStar, FaMapMarkerAlt, FaClock, FaCalendarAlt, FaInfoCircle, FaListUl } from 'react-icons/fa';
 import styles from '../salon.module.css'; 
-
-// CALEA CORECTATĂ (3 nivele sus pentru /src/components, care este o cale mai logică pentru BookingWidget)
 import BookingWidget from '../../../components/BookingWidget'; 
 import AIChatBooking from '../../../components/AIChatBooking'; 
+// ATENȚIE: Nu mai importăm db.js aici.
 
-// ATENȚIE: CALEA EXHAUSTIVĂ PENTRU DB.JS (4 NIVELE SUS)
-import { getSalonDetails, findSalonServices } from '../../../../db'; 
+// --- BAZA DE DATE SIMULATĂ MUTATĂ DIRECT ÎN COMPONENTĂ ---
+const salonsDB = [
+    {
+        id: 'salon-de-lux-central', 
+        name: 'Salon de Lux Central',
+        rating: 4.8,
+        reviews: 120,
+        address: 'Strada Exemplului, Nr. 15, București',
+        schedule: 'Luni - Sâmbătă: 09:00 - 20:00',
+        description: 'Suntem un salon modern care oferă servicii de înaltă calitate.',
+        category: 'salon',
+    }
+];
+
+const servicesDB = [
+    { id: 1, salonId: 'salon-de-lux-central', name: 'Tuns Bărbați', price: 80, duration: 45 },
+    { id: 2, salonId: 'salon-de-lux-central', name: 'Vopsit', price: 150, duration: 90 },
+    { id: 3, salonId: 'salon-de-lux-central', name: 'Manichiură', price: 80, duration: 60 },
+];
+// --- Sfârșit Bază de Date ---
+
+
+// Funcții Helper locale
+const getSalonDetails = (slug) => {
+    return salonsDB.find(s => s.id === slug);
+};
+
+const findSalonServices = (salonId) => {
+    return servicesDB.filter(s => s.salonId === salonId);
+};
 
 
 // Funcție asincronă pentru a prelua datele salonului
 const fetchSalonData = async (slug) => {
-    // Așteptăm răspunsul din baza de date (simulată)
     const salon = getSalonDetails(slug);
     
     if (!salon) {
@@ -35,7 +61,7 @@ export default async function SalonPage({ params }) {
     const salonData = await fetchSalonData(slug);
     
     if (!salonData) {
-        // Dacă eroarea 404 persistă, verificați căile din fișierele API
+        // Dacă eroarea 404 persistă, înseamnă că Server Componentul eșuează
         return <div>404 Salonul cu slug-ul '{slug}' nu a fost găsit.</div>; 
     }
     
@@ -84,7 +110,7 @@ export default async function SalonPage({ params }) {
                 </div>
 
                 {/* Coloana de Servicii și Booking (dreapta) */}
-                <div classNamează={styles.bookingColumn}>
+                <div className={styles.bookingColumn}>
                     
                     {/* 1. Componenta Booking Widget (Pașii de Programare) */}
                     <BookingWidget services={salonData.services} salonId={salonData.id} />

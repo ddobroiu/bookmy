@@ -4,11 +4,32 @@ import React, { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import Link from 'next/link';
 
-export default function ProfileClientPage({ initialUserData }) {
-  const [userData, setUserData] = useState(initialUserData);
+export default function ProfileClientPage() {
+  const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState(initialUserData);
+  const [editedData, setEditedData] = useState({ name: '', email: '', phoneNumber: '', role: '' });
+  const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
+
+  React.useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          setUserData(data);
+          setEditedData(data);
+        } else {
+          setUserData(null);
+        }
+      } catch {
+        setUserData(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProfile();
+  }, []);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -62,6 +83,12 @@ export default function ProfileClientPage({ initialUserData }) {
   };
   // ...existing code...
 
+  if (loading) {
+    return <div className="container mx-auto p-4">Se încarcă profilul...</div>;
+  }
+  if (!userData) {
+    return <div className="container mx-auto p-4 text-red-500">Nu s-au găsit date de profil. Relogați-vă!</div>;
+  }
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Profilul Meu</h1>

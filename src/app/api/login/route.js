@@ -39,12 +39,11 @@ export async function POST(request) {
     }
 
     try {
-      session.user = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        salonSetup: user.salonSetup,
-      };
+      session.userId = user.id;
+      session.email = user.email;
+      session.role = user.role;
+      session.salonSetup = user.salonSetup;
+      session.isLoggedIn = true;
       await session.save();
     } catch (sessionSaveError) {
       console.error('Eroare la salvarea sesiunii:', sessionSaveError);

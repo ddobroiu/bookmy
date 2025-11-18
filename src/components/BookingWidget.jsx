@@ -48,7 +48,7 @@ export default function BookingWidget({ services: availableServices, salonId }) 
         setSelectedTime(null); 
         
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/slots?date=${date}&staffId=${staffId}&serviceId=${serviceId}`);
+            const response = await fetch(`/api/slots?date=${date}&staffId=${staffId}&serviceId=${serviceId}`);
             
             if (response.ok) {
                 const slots = await response.json();

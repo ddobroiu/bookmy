@@ -1,10 +1,10 @@
-// /src/app/dashboard/calendar/page.js (FIX CALE DB)
+// /src/app/dashboard/calendar/page.js (COD COMPLET FINAL)
 
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import PartnerCalendar from '../../../components/PartnerCalendar';
-import { findSalonStaff } from '../../../db'; // CORECTAT: Cale 3 nivele sus
-// ... restul codului rămâne neschimbat.
+// CORECTAT: Folosim alias-ul @/
+import { findSalonStaff } from '@/db'; 
 
 // Componentă pentru a simula filtrarea calendarului
 const CalendarWithStaffFilter = () => {
@@ -16,8 +16,7 @@ const CalendarWithStaffFilter = () => {
     const fetchStaff = useCallback(async () => {
         setIsLoadingStaff(true);
         try {
-            // Presupunem că apelul la funcția din db.js funcționează aici.
-            // În realitate, am folosi un API endpoint securizat: /api/dashboard/data?type=staff
+            // Aici ar trebui să ai un apel API real, dar folosim funcția din db.js
             const staffData = findSalonStaff('salon-de-lux-central'); // Folosim ID-ul de test
             
             // Adăugăm opțiunea "Toți"
@@ -30,8 +29,8 @@ const CalendarWithStaffFilter = () => {
     }, []);
 
     useEffect(() => {
-        fetchStaff();
-    }, [fetchStaff]);
+        fetchData();
+    }, [fetchData]);
     
     // În Dashboard, nu afișăm doar Calendarul.
     return (

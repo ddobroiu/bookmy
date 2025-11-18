@@ -1,14 +1,12 @@
-// /src/app/dashboard/data/route.js (FIX CALE DB)
+// /src/app/dashboard/data/route.js (COD COMPLET FINAL)
 
 import { NextResponse } from 'next/server';
-import { servicesDB, staffDB, findSalonServices, findSalonStaff } from '../../../db'; // CORECTAT: Cale 3 nivele sus
-
-// ... restul codului rămâne neschimbat.
+// CORECTAT: Folosim alias-ul @/
+import { servicesDB, staffDB, findSalonServices, findSalonStaff } from '@/db'; 
 
 // Funcția Helper pentru a obține ID-ul salonului (din cookie sau simulare)
 const getSalonId = (request) => {
     // În realitate, ai decoda un JWT sau verifica o sesiune
-    // Pentru simulare, folosim un ID fix
     return 'salon-de-lux-central'; 
 };
 

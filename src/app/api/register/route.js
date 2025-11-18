@@ -2,10 +2,9 @@
 
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-// Calea corectă: 3 nivele sus pentru /src/db.js
-import { usersDB } from '../../../db'; 
+// CORECTAT: Folosim alias-ul @/
+import { usersDB } from '@/db'; 
 
-// ATENȚIE: Inlocuiește cu cheia ta API Resend (Resend API Key)
 const resend = new Resend(process.env.RESEND_API_KEY); 
 
 export async function POST(request) {
@@ -16,15 +15,12 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
-    // 1. Simulare: Verificare existență utilizator (folosind usersDB)
     if (usersDB.find(u => u.email === email)) {
       return NextResponse.json({ message: 'User already exists' }, { status: 409 });
     }
 
-    // 2. Simulare: Înregistrare
     usersDB.push({ email, password, role });
     
-    // 3. Trimiterea Email-ului de Confirmare (Folosind Resend)
     const { error } = await resend.emails.send({
       from: 'BooksApp <onboarding@bookmy.ro>', // Adresa ta verificată Resend
       to: [email],
@@ -41,7 +37,6 @@ export async function POST(request) {
       return NextResponse.json({ message: 'User created, but email failed to send.' }, { status: 500 });
     }
 
-    // 4. Răspuns de succes
     return NextResponse.json({ 
       message: 'User registered and welcome email sent!',
     }, { status: 201 });

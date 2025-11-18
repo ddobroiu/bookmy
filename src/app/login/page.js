@@ -4,12 +4,11 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-// Calea corectă către Context (două nivele sus)
 import { useToast } from '../../context/ToastContext'; 
-// Calea corectă: 3 nivele sus pentru /src/components/AuthForm.module.css
-import styles from '../../../components/AuthForm.module.css'; 
-// Calea către logica DB pentru simulare de utilizatori
-import { findUser } from '../../../db'; 
+// CORECTAT: Folosim alias-ul @/ pentru a accesa direct /src/components/AuthForm.module.css
+import styles from '@/components/AuthForm.module.css'; 
+// CORECTAT: Folosim alias-ul @/ pentru a accesa direct /src/db
+import { findUser } from '@/db'; 
 
 
 export default function LoginPage() {
@@ -39,7 +38,6 @@ export default function LoginPage() {
 
         localStorage.setItem('userRole', userRole);
 
-        // Redirecționare bazată pe rol
         if (userRole === 'partner') {
           router.push('/dashboard');
         } else {

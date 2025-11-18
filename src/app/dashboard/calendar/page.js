@@ -1,41 +1,41 @@
-// /src/app/dashboard/calendar/page.js (FIX FINAL)
+// /src/app/dashboard/calendar/page.js (Refactorizat cu API Fetch)
 
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import PartnerCalendar from '../../../components/PartnerCalendar';
-import { findSalonStaff } from '@/db'; // Importăm funcția de găsire staff
 
-// Componentă pentru a simula filtrarea calendarului
+// Componentă pentru a afișa calendarul cu filtru de personal
 const CalendarWithStaffFilter = () => {
     const [staffList, setStaffList] = useState([]);
     const [selectedStaffId, setSelectedStaffId] = useState('all'); 
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
-    // 1. Funcția de bază pentru a prelua angajații
+    // 1. Funcția de preluare a angajaților de la API
     const fetchStaff = useCallback(async () => {
         setIsLoadingStaff(true);
         try {
-            // Folosim findSalonStaff (simulare DB)
-            const staffData = findSalonStaff('salon-de-lux-central'); 
+            // Apelăm endpoint-ul API pentru a prelua lista de angajați
+            const response = await fetch('/api/dashboard/data?type=staff');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const staffData = await response.json();
             
-            // Adăugăm opțiunea "Toți"
+            // Adăugăm opțiunea "Toți" la începutul listei
             setStaffList([{ id: 'all', name: 'Toți Angajații' }, ...staffData]);
         } catch (error) {
-            console.error("Eroare la încărcarea staff-ului:", error);
+            console.error("Eroare la încărcarea personalului:", error);
+            // Oprește încărcarea chiar dacă există o eroare pentru a nu bloca UI-ul
         } finally {
             setIsLoadingStaff(false);
         }
-    }, []); // Dependență goală, se rulează o singură dată
+    }, []); // Fără dependențe, se execută o singură dată la montarea componentei
 
-    // 2. Apelăm funcția corectă la încărcarea componentei
+    // 2. Apelăm funcția la încărcarea componentei
     useEffect(() => {
-        // CORECTAT: Apelăm funcția fetchStaff, nu fetchData
         fetchStaff(); 
     }, [fetchStaff]);
-    
-    
-    // ... restul codului rămâne neschimbat (return, filtre, etc.) ...
     
     return (
         <div style={{ padding: '0 20px', maxWidth: '1600px', margin: '0 auto' }}>
@@ -62,7 +62,7 @@ const CalendarWithStaffFilter = () => {
                 )}
             </div>
 
-            {/* Calendarul Partenerului - Trimitem filtrul */}
+            {/* Calendarul Partenerului - Trimitem ID-ul personalului selectat */}
             <PartnerCalendar staffId={selectedStaffId} />
         </div>
     );

@@ -1,52 +1,76 @@
-// /src/app/api/register/route.js (COD COMPLET FINAL)
+// /src/app/api/register/route.js
 
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-// SIMULARE DATE: Mutăm baza de date a utilizatorilor aici
-const usersDB = []; 
+import prisma from '@/lib/prisma'; // Importăm clientul Prisma
+import bcrypt from 'bcryptjs'; // Importăm bcrypt pentru hash
 
-// ATENȚIE: Inlocuiește cu cheia ta API Resend (Resend API Key)
+// Inițializăm Resend cu cheia API din variabilele de mediu
 const resend = new Resend(process.env.RESEND_API_KEY); 
 
 export async function POST(request) {
   try {
     const { email, password, role } = await request.json();
     
+    // Validare input
     if (!email || !password || !role) {
       return NextResponse.json({ message: 'Lipsește email-ul, parola sau rolul.' }, { status: 400 });
     }
+    if (password.length < 6) {
+      return NextResponse.json({ message: 'Parola trebuie să aibă cel puțin 6 caractere.' }, { status: 400 });
+    }
 
-    // 1. Simulare: Verifică existența utilizatorului
-    if (usersDB.find(u => u.email === email)) {
+    // 1. Verificăm dacă utilizatorul există deja în baza de date
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    if (existingUser) {
       return NextResponse.json({ message: 'Acest email este deja înregistrat.' }, { status: 409 });
     }
 
-    // 2. Simulare: Înregistrare (fără criptare)
-    usersDB.push({ email: email, password: password, role: role, salonSetup: role === 'partner' ? false : true });
-    
-    // 3. Trimiterea Email-ului de Confirmare (Folosind Resend)
-    const { error } = await resend.emails.send({
-      from: 'BooksApp <onboarding@bookmy.ro>', 
-      to: [email],
-      subject: 'Bun venit la BooksApp!',
-      html: `
-        <h1>Bine ai venit, ${email}!</h1>
-        <p>Contul tău a fost creat cu succes ca **${role.toUpperCase()}**.</p>
-        <p>Te poți autentifica acum pe platforma noastră.</p>
-      `,
-    });
+    // 2. Criptăm parola
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    if (error) {
-      console.error('Resend Error:', error);
-      return NextResponse.json({ message: 'Înregistrare reușită, dar emailul de confirmare nu a putut fi trimis.' }, { status: 201 });
+    // 3. Creăm utilizatorul în baza de date
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash, // Salvăm parola criptată
+        role, // 'CLIENT' sau 'PARTENER'
+        salonSetup: role === 'PARTENER' ? false : true,
+      },
+    });
+    
+    // 4. Trimiterea Email-ului de Confirmare (Folosind Resend)
+    try {
+      await resend.emails.send({
+        from: 'BooksApp <onboarding@bookmy.ro>', 
+        to: [email],
+        subject: 'Bun venit la BooksApp!',
+        html: `
+          <h1>Bine ai venit, ${email}!</h1>
+          <p>Contul tău a fost creat cu succes ca **${role.toUpperCase()}**.</p>
+          <p>Te poți autentifica acum pe platforma noastră.</p>
+        `,
+      });
+    } catch (emailError) {
+      console.error('Resend Error:', emailError);
+      // Chiar dacă email-ul eșuează, înregistrarea este un succes.
+      // Logăm eroarea dar continuăm.
     }
 
     return NextResponse.json({ 
       message: 'Înregistrare reușită! Verifică-ți emailul.',
+      user: { id: user.id, email: user.email, role: user.role }, // Nu trimitem parola înapoi
     }, { status: 201 });
 
   } catch (error) {
     console.error('Registration Error:', error);
+    // Verificăm dacă este o eroare cunoscută de la Prisma
+    if (error.code) { // Prisma errors have codes
+        return NextResponse.json({ message: `Eroare la scrierea în baza de date: ${error.message}` }, { status: 500 });
+    }
     return NextResponse.json({ message: 'Eroare internă de server la înregistrare.' }, { status: 500 });
   }
 }

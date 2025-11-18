@@ -43,12 +43,12 @@ export default function AuthStatus() {
     // Afișăm butoanele standard dacă nu este logat
     return (
       <>
-        <Link href="/login" passHref legacyBehavior>
+        <Link href="/login">
           <button className={styles.loginBtn}>
             Logare
           </button>
         </Link>
-        <Link href="/inregistrare-afacere" passHref legacyBehavior>
+        <Link href="/inregistrare-afacere">
           <button className={styles.registerBtn}>
             Înregistrează-te
           </button>
@@ -65,7 +65,7 @@ export default function AuthStatus() {
       </span>
       
       {userRole === 'partner' && (
-        <Link href="/dashboard" passHref legacyBehavior>
+        <Link href="/dashboard">
           <button className={styles.loginBtn} style={{ borderColor: '#1aa858', color: '#1aa858' }}>
             Dashboard
           </button>
@@ -73,7 +73,7 @@ export default function AuthStatus() {
       )}
 
       {userRole === 'client' && (
-        <Link href="/profil" passHref legacyBehavior>
+        <Link href="/profil">
           <button className={styles.loginBtn} style={{ borderColor: '#007bff', color: '#007bff' }}>
             Profilul Meu
           </button>

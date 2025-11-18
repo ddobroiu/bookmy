@@ -1,0 +1,86 @@
+// /prisma/schema.prisma
+
+// Configurează tipul bazei de date (Postgres/MySQL)
+datasource db {
+  provider = "postgresql" // Schimbă la "mysql" dacă folosești MySQL
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------
+// Modele de Producție (pentru Railway)
+// ------------------------------------
+
+// 1. Modelul Utilizator (Client și Partener)
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String // Parolă criptată
+  role         Role      @default(CLIENT) // CLIENT sau PARTENER
+  salonId      String? // ID-ul salonului, dacă utilizatorul este Partener
+  salonSetup   Boolean   @default(false)
+  
+  appointments Appointment[] // Programările făcute de acest client
+
+  @@map("users")
+}
+
+enum Role {
+  CLIENT
+  PARTNER
+}
+
+// 2. Modelul Salon (Afacere) - A fost eliminată ambiguitatea
+model Salon {
+  id           String @id @unique
+  name         String
+  slug         String @unique // Folosit pentru URL-ul public
+  address      String
+  category     String
+  scheduleJson String @db.Text // Orarul de lucru (salvat ca JSON string)
+  
+  staff      Staff[]
+  // Relația cu Programările este numită explicit
+  receivedAppointments Appointment[] @relation(name: "SalonAppointments") 
+
+  @@map("salons")
+}
+
+// 3. Modelul Staff/Angajat
+model Staff {
+  id         String @id @default(uuid())
+  salonId    String
+  name       String
+  role       String
+  
+  // Programările angajatului
+  appointments Appointment[] @relation(name: "StaffAppointments") 
+  
+  @@map("staff")
+}
+
+// 4. Modelul Programare (Booking)
+model Appointment {
+  id           String    @id @default(uuid())
+  title        String
+  start        DateTime
+  end          DateTime
+  isBlock      Boolean   @default(false)
+  
+  // Relații
+  salonId      String
+  // Legătura cu salonul este SalonAppointments
+  salon        Salon     @relation(name: "SalonAppointments", fields: [salonId], references: [id]) 
+  
+  clientId     String?
+  client       User?     @relation(fields: [clientId], references: [id])
+  
+  staffId      String
+  // Legătura cu staff-ul este StaffAppointments
+  staff        Staff     @relation(name: "StaffAppointments", fields: [staffId], references: [id]) 
+
+  @@map("appointments")
+}

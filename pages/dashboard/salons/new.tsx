@@ -118,10 +118,10 @@ export default function NewSalon() {
                   Informații de bază
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Input label="Nume salon" value={name} onChange={setName} placeholder="Numele salonului" icon={<BuildingStorefrontIcon className="w-5 h-5" />} />
-                  <Input label="Telefon" value={phone} onChange={setPhone} placeholder="0740..." icon={<PhoneIcon className="w-5 h-5" />} />
-                  <Input label="Adresă" value={address} onChange={setAddress} placeholder="Strada, oraș" icon={<MapPinIcon className="w-5 h-5" />} />
-                  <Input label="Program (text)" value={openingHours} onChange={setOpeningHours} placeholder="Luni-Vineri 09:00-18:00" icon={<ClockIcon className="w-5 h-5" />} />
+                  <Input label="Nume salon" value={name} onChange={(e) => setName(e.target.value)} placeholder="Numele salonului" icon={<BuildingStorefrontIcon className="w-5 h-5" />} />
+                  <Input label="Telefon" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0740..." icon={<PhoneIcon className="w-5 h-5" />} />
+                  <Input label="Adresă" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Strada, oraș" icon={<MapPinIcon className="w-5 h-5" />} />
+                  <Input label="Program (text)" value={openingHours} onChange={(e) => setOpeningHours(e.target.value)} placeholder="Luni-Vineri 09:00-18:00" icon={<ClockIcon className="w-5 h-5" />} />
                 </div>
                 <div className="mt-6">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Scurtă descriere</label>

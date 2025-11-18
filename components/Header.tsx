@@ -5,6 +5,7 @@ import {
   ArrowLeftOnRectangleIcon,
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline'
+import { LogIn, LogOut } from 'lucide-react'
 
 export default function Header() {
   const { data: session } = useSession()

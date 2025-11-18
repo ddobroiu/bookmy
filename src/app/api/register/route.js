@@ -2,8 +2,9 @@
 
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import prisma from '@/lib/prisma'; // Importăm clientul Prisma
-import bcrypt from 'bcryptjs'; // Importăm bcrypt pentru hash
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { Role } from '@prisma/client'; // Importă enumul Role
 
 // Inițializăm Resend cu cheia API din variabilele de mediu
 const resend = new Resend(process.env.RESEND_API_KEY); 
@@ -20,8 +21,13 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Parola trebuie să aibă cel puțin 6 caractere.' }, { status: 400 });
     }
 
-    // NOU: CONVERTIM ROLUL LA MAJUSCULE pentru a se potrivi cu ENUM-ul din Prisma
-    const prismaRole = role.toUpperCase();
+    // NOU: Validare și conversie corectă pentru enum
+    let prismaRole;
+    if (role && typeof role === 'string' && ['CLIENT', 'PARTENER'].includes(role.toUpperCase())) {
+      prismaRole = role.toUpperCase();
+    } else {
+      return NextResponse.json({ message: 'Rol invalid.' }, { status: 400 });
+    }
     
     // 1. Verificăm dacă utilizatorul există deja în baza de date
     const existingUser = await prisma.user.findUnique({
@@ -40,7 +46,7 @@ export async function POST(request) {
       data: {
         email,
         passwordHash, // Salvăm parola criptată
-        role: prismaRole, // Trimitem rolul corect (CLIENT sau PARTENER)
+        role: prismaRole as Role, // Conversie explicită la enum
         salonSetup: prismaRole === 'PARTENER' ? false : true,
       },
     });

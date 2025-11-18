@@ -50,6 +50,10 @@ model Salon {
   receivedAppointments Appointment[] @relation(name: "SalonAppointments") 
   reviews              Review[] // Recenziile primite de acest salon
 
+  // Câmpuri pentru date agregate despre recenzii
+  averageRating        Float     @default(0)
+  reviewCount          Int       @default(0)
+
   @@map("salons")
 }
 

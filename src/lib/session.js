@@ -33,3 +33,5 @@ export async function getSession() {
   const session = await getIronSession({ cookies: cookies() }, sessionOptions); // compatibil Next.js 16
   return session;
 }
+
+// Modificare de test realizata de Gemini.

@@ -1,130 +1,53 @@
-// /app/register/page.js (COD COMPLET CU LOGICĂ DE ÎNREGISTRARE ȘI RESEND)
+// /src/app/api/register/route.js (COD COMPLET FINAL)
 
-'use client';
+import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+// Calea corectă: 3 nivele sus pentru /src/db.js
+import { usersDB } from '../../../db'; 
 
-import React, { useState } from 'react';
-import styles from './register.module.css';
+// ATENȚIE: Inlocuiește cu cheia ta API Resend (Resend API Key)
+const resend = new Resend(process.env.RESEND_API_KEY); 
 
-export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('client'); // Default: client
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, role }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ 
-          type: 'success', 
-          text: `Înregistrare reușită! ${data.message} Te rugăm să verifici email-ul (${email}).`
-        });
-        // Resetare formular
-        setEmail('');
-        setPassword('');
-        setRole('client');
-      } else {
-        setMessage({ 
-          type: 'error', 
-          text: data.message || 'Eroare la înregistrare.' 
-        });
-      }
-    } catch (error) {
-      console.error('Frontend registration error:', error);
-      setMessage({ 
-        type: 'error', 
-        text: 'A apărut o eroare de rețea. Vă rugăm reîncercați.' 
-      });
-    } finally {
-      setLoading(false);
+export async function POST(request) {
+  try {
+    const { email, password, role } = await request.json();
+    
+    if (!email || !password || !role) {
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
-  };
 
-  return (
-    <div className={styles.registerContainer}>
-      <h1>Înregistrare BooksApp</h1>
-      <p>Alege-ți tipul de cont pentru a continua:</p>
+    // 1. Simulare: Verificare existență utilizator (folosind usersDB)
+    if (usersDB.find(u => u.email === email)) {
+      return NextResponse.json({ message: 'User already exists' }, { status: 409 });
+    }
 
-      <form onSubmit={handleSubmit}>
-        
-        {/* Selector de Rol */}
-        <div className={styles.formGroup}>
-          <div className={styles.roleSelector}>
-            <button
-              type="button"
-              className={`${styles.roleButton} ${role === 'client' ? styles.active : ''}`}
-              onClick={() => setRole('client')}
-            >
-              Clienți (Vreau să mă programez)
-            </button>
-            <button
-              type="button"
-              className={`${styles.roleButton} ${role === 'partner' ? styles.active : ''}`}
-              onClick={() => setRole('partner')}
-            >
-              Parteneri (Vreau să înregistrez un Salon)
-            </button>
-          </div>
-        </div>
+    // 2. Simulare: Înregistrare
+    usersDB.push({ email, password, role });
+    
+    // 3. Trimiterea Email-ului de Confirmare (Folosind Resend)
+    const { error } = await resend.emails.send({
+      from: 'BooksApp <onboarding@bookmy.ro>', // Adresa ta verificată Resend
+      to: [email],
+      subject: 'Bun venit la BooksApp!',
+      html: `
+        <h1>Bine ai venit, ${email}!</h1>
+        <p>Contul tău a fost creat cu succes ca **${role.toUpperCase()}**.</p>
+        <p>Te poți autentifica acum pe platforma noastră.</p>
+      `,
+    });
 
-        {/* Email */}
-        <div className={styles.formGroup}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            className={styles.inputField}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-          />
-        </div>
+    if (error) {
+      console.error('Resend Error:', error);
+      return NextResponse.json({ message: 'User created, but email failed to send.' }, { status: 500 });
+    }
 
-        {/* Parolă */}
-        <div className={styles.formGroup}>
-          <label htmlFor="password">Parolă</label>
-          <input
-            id="password"
-            type="password"
-            className={styles.inputField}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-          />
-        </div>
-        
-        <button
-          type="submit"
-          className={styles.submitButton}
-          disabled={loading}
-        >
-          {loading ? 'Se înregistrează...' : 'Înregistrează-te'}
-        </button>
-      </form>
+    // 4. Răspuns de succes
+    return NextResponse.json({ 
+      message: 'User registered and welcome email sent!',
+    }, { status: 201 });
 
-      {/* Mesaje de feedback */}
-      {message.text && (
-        <p className={message.type === 'success' ? styles.successMessage : styles.errorMessage}>
-          {message.text}
-        </p>
-      )}
-
-    </div>
-  );
+  } catch (error) {
+    console.error('Registration Error:', error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  }
 }

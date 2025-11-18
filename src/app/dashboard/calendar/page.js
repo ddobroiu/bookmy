@@ -1,10 +1,10 @@
-// /app/dashboard/calendar/page.js (COD NOU: Calendar cu Filtru Angajați)
+// /src/app/dashboard/calendar/page.js (FIX CALE DB)
 
 'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import PartnerCalendar from '../../../components/PartnerCalendar';
-import { findSalonStaff } from '../../db'; // Importăm funcția de găsire staff
+import { findSalonStaff } from '../../../db'; // CORECTAT: Cale 3 nivele sus
+// ... restul codului rămâne neschimbat.
 
 // Componentă pentru a simula filtrarea calendarului
 const CalendarWithStaffFilter = () => {

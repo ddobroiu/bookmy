@@ -1,7 +1,9 @@
-// /app/api/dashboard/data/route.js (COD COMPLET)
+// /src/app/dashboard/data/route.js (FIX CALE DB)
 
 import { NextResponse } from 'next/server';
-import { servicesDB, staffDB, findSalonServices, findSalonStaff } from '@/lib/db'; 
+import { servicesDB, staffDB, findSalonServices, findSalonStaff } from '../../../db'; // CORECTAT: Cale 3 nivele sus
+
+// ... restul codului rămâne neschimbat.
 
 // Funcția Helper pentru a obține ID-ul salonului (din cookie sau simulare)
 const getSalonId = (request) => {

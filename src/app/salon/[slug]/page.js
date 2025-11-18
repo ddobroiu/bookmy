@@ -1,13 +1,14 @@
-// /src/app/salon/[slug]/page.js (COD COMPLET FINAL CORECTAT PENTRU /src/app)
+// /src/app/salon/[slug]/page.js (COD COMPLET FINAL)
 
 import { FaStar, FaMapMarkerAlt, FaClock, FaCalendarAlt, FaInfoCircle, FaListUl } from 'react-icons/fa';
 import styles from '../salon.module.css'; 
 
-// CALE CORECTATĂ: 3 nivele de ieșire pentru /src/components
+// CALEA CORECTATĂ (3 nivele sus pentru /src/components, care este o cale mai logică pentru BookingWidget)
 import BookingWidget from '../../../components/BookingWidget'; 
 import AIChatBooking from '../../../components/AIChatBooking'; 
-// CALE CORECTATĂ: 3 nivele de ieșire pentru /src/db.js
-import { getSalonDetails, findSalonServices } from '../../../db'; 
+
+// ATENȚIE: CALEA EXHAUSTIVĂ PENTRU DB.JS (4 NIVELE SUS)
+import { getSalonDetails, findSalonServices } from '../../../../db'; 
 
 
 // Funcție asincronă pentru a prelua datele salonului
@@ -83,7 +84,7 @@ export default async function SalonPage({ params }) {
                 </div>
 
                 {/* Coloana de Servicii și Booking (dreapta) */}
-                <div className={styles.bookingColumn}>
+                <div classNamează={styles.bookingColumn}>
                     
                     {/* 1. Componenta Booking Widget (Pașii de Programare) */}
                     <BookingWidget services={salonData.services} salonId={salonData.id} />

@@ -22,10 +22,8 @@ export async function POST(request) {
     }
 
     // NOU: Validare și conversie corectă pentru enum
-    let prismaRole;
-    if (role && typeof role === 'string' && ['CLIENT', 'PARTENER'].includes(role.toUpperCase())) {
-      prismaRole = role.toUpperCase();
-    } else {
+    const prismaRole = role && typeof role === 'string' ? role.trim().toUpperCase() : '';
+    if (!['CLIENT', 'PARTENER'].includes(prismaRole)) {
       return NextResponse.json({ message: 'Rol invalid.' }, { status: 400 });
     }
     

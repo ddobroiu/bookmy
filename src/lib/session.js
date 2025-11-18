@@ -30,6 +30,6 @@ const sessionOptions = {
  * @returns {Promise<import('iron-session').IronSession<SessionData>>}
  */
 export async function getSession() {
-  const session = await getIronSession(cookies(), sessionOptions);
+  const session = await getIronSession({ cookies }, sessionOptions); // compatibil Next.js 13+/16
   return session;
 }

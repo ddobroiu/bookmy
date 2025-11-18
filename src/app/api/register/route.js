@@ -46,7 +46,7 @@ export async function POST(request) {
       data: {
         email,
         passwordHash, // Salvăm parola criptată
-        role: prismaRole as Role, // Conversie explicită la enum
+        role: prismaRole, // Trimitem rolul ca string valid pentru enum
         salonSetup: prismaRole === 'PARTENER' ? false : true,
       },
     });

@@ -61,4 +61,33 @@ export default function LoginPage() {
 
       <form onSubmit={handleLogin}>
         {/* Email */}
-        <div className={styles.formGroup}></div>
+        <div className={styles.formGroup}>
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        {/* Password */}
+        <div className={styles.formGroup}>
+          <label htmlFor="password">Parolă</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit" className={styles.submitButton} disabled={loading}>
+          {loading ? 'Se încarcă...' : 'Autentificare'}
+        </button>
+      </form>
+    </div>
+  );
+}

@@ -1,74 +1,88 @@
-// /src/app/api/onboarding/route.js (COD COMPLET)
+// /src/app/api/onboarding/route.js (Refactorizat cu Prisma)
 
 import { NextResponse } from 'next/server';
-// Importăm baza de date pentru a actualiza starea (simulată)
-// Presupunând că ai fișierele /src/db.js cu structurile exportate
-import { salonsDB, usersDB } from '@/db'; 
+import prisma from '../../../lib/prisma'; // Importăm clientul Prisma
 
 // Funcție helper pentru a obține ID-ul utilizatorului (simulare)
-const getUserId = (request) => {
-    // În realitate, ai decoda un JWT și ai returna ID-ul utilizatorului logat
-    return 'partner@test.com'; 
+// În producție, acest ID ar trebui extras dintr-un token de autentificare (JWT)
+const getUserIdFromRequest = async (request) => {
+    // Simulare: Presupunem că email-ul este într-un header sau sesiune
+    const userEmail = 'partner@test.com'; // Hardcodat pentru demonstrație
+    const user = await prisma.user.findUnique({
+        where: { email: userEmail },
+    });
+    return user?.id; // Returnează ID-ul utilizatorului sau null
 };
 
 /**
- * Functie POST: Salvează configurarea finală a salonului (Onboarding)
- * * Datele primite (formData) includ:
- * { name, address, category, services, schedule }
+ * Functie POST: Salvează configurarea finală a salonului (Onboarding) folosind Prisma
+ * Datele primite (formData) includ: { name, address, category, services, schedule }
  */
 export async function POST(request) {
     try {
         const formData = await request.json();
-        const userId = getUserId(request); // Identifică utilizatorul logat
+        const userId = await getUserIdFromRequest(request);
 
-        // 1. Validare de bază
+        // 1. Validare utilizator și date
+        if (!userId) {
+            return NextResponse.json({ message: 'Utilizator neautorizat.' }, { status: 401 });
+        }
+
         if (!formData.name || !formData.category || !formData.schedule) {
-            return NextResponse.json({ message: 'Missing required configuration fields.' }, { status: 400 });
+            return NextResponse.json({ message: 'Lipsesc câmpuri de configurare obligatorii.' }, { status: 400 });
         }
 
-        // 2. Simulare: Generarea unui slug bazat pe nume (URL prietenos)
-        const salonSlug = formData.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
-        
-        // 3. Simulare: Crearea/Actualizarea salonului în baza de date
-        const existingSalonIndex = salonsDB.findIndex(s => s.id === salonSlug);
-
-        const newSalonData = {
-            id: salonSlug,
-            name: formData.name,
-            address: formData.address,
-            category: formData.category,
-            schedule: formData.schedule, // Orarul Săptămânal Salvat!
-            services: formData.services, // Serviciile Salvate!
-            rating: 5.0, 
-            reviews: 0,
-            description: "Descriere generată automat la onboarding."
-        };
-
-        if (existingSalonIndex !== -1) {
-            // Actualizează (dacă există)
-            salonsDB[existingSalonIndex] = { ...salonsDB[existingSalonIndex], ...newSalonData };
-        } else {
-            // Creează (dacă e nou)
-            salonsDB.push(newSalonData);
+        // 2. Generarea unui slug unic pentru URL
+        const baseSlug = formData.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        // Verifică dacă slug-ul există deja și adaugă un sufix numeric dacă este necesar
+        while (await prisma.salon.findUnique({ where: { slug: uniqueSlug } })) {
+            uniqueSlug = `${baseSlug}-${counter}`;
+            counter++;
         }
 
-        // 4. Simulare: Actualizează starea utilizatorului (marchează ca fiind configurat)
-        const userIndex = usersDB.findIndex(u => u.email === userId);
-        if (userIndex !== -1) {
-            usersDB[userIndex].salonSetup = true;
-        }
+        // 3. Crearea/Actualizarea salonului în baza de date
+        const salon = await prisma.salon.upsert({
+            where: { id: userId }, // Folosim un ID unic, de ex. ID-ul partenerului
+            update: {
+                name: formData.name,
+                slug: uniqueSlug,
+                address: formData.address,
+                category: formData.category,
+                scheduleJson: JSON.stringify(formData.schedule), // Salvăm orarul ca JSON
+            },
+            create: {
+                id: userId, // Asociază salonul cu ID-ul partenerului
+                name: formData.name,
+                slug: uniqueSlug,
+                address: formData.address,
+                category: formData.category,
+                scheduleJson: JSON.stringify(formData.schedule),
+            },
+        });
 
-        // 5. Success
-        console.log('--- ONBOARDING COMPLETED & DATA SAVED (Simulated) ---');
-        console.log('Salon Data:', newSalonData);
+        // 4. Actualizează starea utilizatorului (marchează ca fiind configurat)
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                salonSetup: true,
+                salonId: salon.id, // Leagă utilizatorul de salon
+            },
+        });
 
-        return NextResponse.json({ 
+        // 5. Succes
+        console.log('--- ONBOARDING COMPLETAT CU PRISMA ---');
+        console.log('Date Salon:', salon);
+
+        return NextResponse.json({
             message: 'Afacere configurată și salvată cu succes!',
-            salonId: salonSlug
+            salonId: salon.id,
+            salonSlug: salon.slug,
         }, { status: 200 });
 
     } catch (error) {
-        console.error('Onboarding Submission Error:', error);
-        return NextResponse.json({ message: 'Internal Server Error during submission.' }, { status: 500 });
+        console.error('Eroare la trimiterea datelor de onboarding:', error);
+        return NextResponse.json({ message: 'Eroare internă a serverului la trimitere.' }, { status: 500 });
     }
 }

@@ -1,4 +1,4 @@
-/* /app/dashboard/onboarding/onboarding.module.css */
+/* /app/dashboard/onboarding/onboarding.module.css (COD COMPLET ȘI FINAL) */
 
 .onboardingContainer {
     max-width: 900px;
@@ -173,6 +173,41 @@
 
 .addButton:hover {
     background-color: #167e42;
+}
+
+
+/* -------------------------------------- */
+/* Programul de Lucru (FINAL) */
+/* -------------------------------------- */
+
+.scheduleItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.scheduleDay {
+    font-size: 16px;
+    font-weight: 600;
+    width: 100px;
+}
+
+.scheduleToggle input {
+    margin-right: 8px;
+}
+
+.timeInputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timeInput {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 

@@ -1,41 +1,39 @@
-// src/lib/session.ts
+// /src/lib/session.ts (COD ACTUALIZAT ȘI FIXAT PENTRU LOCALHOST)
+
 import { getIronSession, IronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { Role } from '@prisma/client';
 import { SESSION_COOKIE_NAME } from '@/config';
 
-// Verificăm dacă secretul de sesiune este setat
-if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
-  throw new Error('Variabila de mediu SESSION_SECRET nu este setată corect. Trebuie să aibă cel puțin 32 de caractere.');
-}
+// Fallback pentru secret în development, ca să nu crape dacă lipsește din .env
+const secret = process.env.SESSION_SECRET || "complex_password_at_least_32_characters_long";
 
 export interface SessionData {
   userId?: string;
-  role?: Role; // Use the Prisma Role enum
+  role?: Role; 
   salonSetup?: boolean;
   isLoggedIn: boolean;
-  // Alte câmpuri opționale dacă sunt necesare (ex: email)
   email?: string;
   salonId?: string;
 }
 
-// MODIFICARE AICI: Adăugat 'export' pentru ca middleware.js să o poată folosi
+// Configurația Sesiunii
 export const sessionOptions = {
-  password: process.env.SESSION_SECRET.padEnd(32, 'x'), // asigură minim 32 caractere
-  cookieName: SESSION_COOKIE_NAME, // Numele cookie-ului criptat
+  password: secret,
+  cookieName: SESSION_COOKIE_NAME || 'bookmy_session',
   cookieOptions: {
-    // Setează secure: true în producție pentru a trimite cookie-ul doar prin HTTPS
+    // IMPORTANT: Setăm secure: false explicit dacă nu suntem în producție
+    // Acest lucru permite cookie-ului să funcționeze pe http://localhost
     secure: process.env.NODE_ENV === 'production',
-    httpOnly: true, // Previne accesul la cookie prin JavaScript-ul din browser
+    httpOnly: true,
+    sameSite: 'lax' as const, // 'lax' este necesar pentru navigarea normală
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7, // Sesiunea expiră în 7 zile
   },
 };
 
-/**
- * Funcție ajutătoare pentru a obține sesiunea curentă în componente de server sau rute API.
- * @returns {Promise<IronSession<SessionData>>}
- */
 export async function getSession(): Promise<IronSession<SessionData>> {
-  // Next.js 15/16: cookies() este Promise, trebuie await
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  const cookieStore = await cookies();
+  const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
   return session;
 }

@@ -1,34 +1,52 @@
-// /src/app/profil/ProfileClientPage.jsx (COD COMPLET ACTUALIZAT CU ÎNCĂRCARE POZĂ)
+// /src/app/profil/ProfileClientPage.jsx (COD COMPLET FINAL - FĂRĂ CACHE)
 
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useToast } from '../../context/ToastContext';
 import styles from './profile.module.css';
-import { FaUserEdit, FaSave, FaTimes, FaCamera } from 'react-icons/fa';
+import { FaUserEdit, FaSave, FaTimes, FaCamera, FaSignInAlt } from 'react-icons/fa';
 
 export default function ProfileClientPage() {
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ name: '', email: '', phoneNumber: '', role: '', avatarUrl: '' });
   const [loading, setLoading] = useState(true);
-  const fileInputRef = useRef(null); // Referință către input-ul ascuns
+  const fileInputRef = useRef(null);
+  
   const { showToast } = useToast();
+  const router = useRouter();
 
   // Fetch date utilizator
-  React.useEffect(() => {
+  useEffect(() => {
     async function fetchProfile() {
       try {
-        const response = await fetch('/api/user/profile');
+        // MODIFICARE CRITICĂ AICI:
+        // Adăugăm opțiuni pentru a preveni cache-ul browserului
+        const response = await fetch('/api/user/profile', {
+            cache: 'no-store',
+            headers: {
+                'Pragma': 'no-cache',
+                'Cache-Control': 'no-cache'
+            }
+        });
+        
+        if (response.status === 401) {
+            // Dacă primim 401, înseamnă că sesiunea chiar a expirat sau lipsește
+            setUserData(null);
+            return;
+        }
+
         if (response.ok) {
           const data = await response.json();
           setUserData(data);
-          // Populăm și editedData cu avatarul existent
           setEditedData(data);
         } else {
           setUserData(null);
         }
-      } catch {
+      } catch (error) {
+        console.error("Fetch profile error:", error);
         setUserData(null);
       } finally {
         setLoading(false);
@@ -37,6 +55,12 @@ export default function ProfileClientPage() {
     fetchProfile();
   }, []);
 
+  const handleGoToLogin = () => {
+      localStorage.removeItem('userRole');
+      router.push('/login');
+      router.refresh();
+  };
+
   const handleEditClick = () => {
     setIsEditing(true);
     setEditedData(userData);
@@ -44,7 +68,7 @@ export default function ProfileClientPage() {
 
   const handleCancelClick = () => {
     setIsEditing(false);
-    setEditedData(userData); // Resetăm la datele originale
+    setEditedData(userData);
   };
 
   const handleChange = (e) => {
@@ -55,12 +79,10 @@ export default function ProfileClientPage() {
     }));
   };
 
-  // Gestionarea încărcării imaginii
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validare simplă mărime (max 2MB pentru base64)
     if (file.size > 2 * 1024 * 1024) {
         showToast('Imaginea este prea mare (max 2MB).', 'error');
         return;
@@ -68,7 +90,6 @@ export default function ProfileClientPage() {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-        // Setăm string-ul Base64 în starea editedData
         setEditedData((prev) => ({
             ...prev,
             avatarUrl: reader.result
@@ -77,7 +98,6 @@ export default function ProfileClientPage() {
     reader.readAsDataURL(file);
   };
 
-  // Trigger pentru input-ul de fișier ascuns
   const triggerFileInput = () => {
       if (isEditing && fileInputRef.current) {
           fileInputRef.current.click();
@@ -97,7 +117,7 @@ export default function ProfileClientPage() {
         body: JSON.stringify({
           name: editedData.name,
           phoneNumber: editedData.phoneNumber,
-          avatarUrl: editedData.avatarUrl, // Trimitem și imaginea
+          avatarUrl: editedData.avatarUrl,
         }),
       });
 
@@ -113,32 +133,49 @@ export default function ProfileClientPage() {
   };
 
   if (loading) return <div className={styles.loading}>Se încarcă datele...</div>;
-  if (!userData) return <div className={styles.error}>Nu ești autentificat.</div>;
 
+  // --- STARE DE EROARE / SESIUNE EXPIRATĂ ---
+  if (!userData) {
+    return (
+        <div className={styles.profileCard} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
+            <h2 style={{ color: '#e64c3c', marginBottom: '20px' }}>Sesiune Expirată</h2>
+            <p style={{ color: '#666', marginBottom: '30px' }}>Te rugăm să te autentifici din nou pentru a accesa profilul.</p>
+            <button 
+                onClick={handleGoToLogin}
+                className={styles.saveBtn} 
+                style={{ padding: '12px 25px', fontSize: '16px' }}
+            >
+                <FaSignInAlt style={{ marginRight: '8px' }} /> Mergi la Autentificare
+            </button>
+        </div>
+    );
+  }
+
+  // --- CONȚINUT NORMAL (LOGAT) ---
   return (
     <div className={styles.profileCard}>
       
-      {/* Header cu Avatar */}
       <div className={styles.header}>
-        
-        {/* Wrapper Avatar */}
-        <div className={styles.avatarWrapper} onClick={triggerFileInput}>
+        <div className={styles.avatarWrapper} onClick={triggerFileInput} title={isEditing ? "Schimbă poza" : ""} style={{ cursor: isEditing ? 'pointer' : 'default' }}>
             <div className={styles.avatarCircle}>
-              {editedData.avatarUrl ? (
-                  <img src={editedData.avatarUrl} alt="Avatar" className={styles.avatarImage} />
+              {editedData.avatarUrl || userData.avatarUrl ? (
+                  <img 
+                    src={isEditing ? editedData.avatarUrl : userData.avatarUrl} 
+                    alt="Avatar" 
+                    className={styles.avatarImage} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
               ) : (
                   userData.name ? userData.name.charAt(0).toUpperCase() : 'U'
               )}
             </div>
             
-            {/* Iconița de editare apare doar în modul editare */}
             {isEditing && (
                 <div className={styles.uploadOverlay}>
                     <FaCamera />
                 </div>
             )}
             
-            {/* Input ascuns pentru fișier */}
             <input 
                 type="file" 
                 accept="image/*" 
@@ -154,12 +191,10 @@ export default function ProfileClientPage() {
         </div>
       </div>
 
-      {/* Formular Date */}
       <h2 className={styles.sectionTitle}>Date Personale</h2>
       
       <div className={styles.formGrid}>
         
-        {/* Nume */}
         <div className={styles.formGroup}>
           <label className={styles.label}>Nume și Prenume</label>
           {isEditing ? (
@@ -175,7 +210,6 @@ export default function ProfileClientPage() {
           )}
         </div>
 
-        {/* Telefon */}
         <div className={styles.formGroup}>
           <label className={styles.label}>Număr Telefon</label>
           {isEditing ? (
@@ -192,7 +226,6 @@ export default function ProfileClientPage() {
           )}
         </div>
 
-        {/* Email (Read-only) */}
         <div className={styles.formGroup}>
           <label className={styles.label}>Adresă Email</label>
           <input 
@@ -203,7 +236,6 @@ export default function ProfileClientPage() {
           />
         </div>
 
-        {/* Tip Cont (Read-only) */}
         <div className={styles.formGroup}>
           <label className={styles.label}>Tip Cont</label>
           <div className={styles.valueText} style={{ textTransform: 'capitalize' }}>
@@ -211,7 +243,6 @@ export default function ProfileClientPage() {
           </div>
         </div>
 
-        {/* Butoane Acțiune */}
         <div className={styles.buttonGroup}>
           {isEditing ? (
             <>

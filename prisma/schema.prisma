@@ -1,23 +1,98 @@
-// ... restul codului de configurare ...
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// 1. Modelul Utilizator (Client și Partener)
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum Role {
+  CLIENT
+  PARTNER
+}
+
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
   name         String?
   phoneNumber  String?
   passwordHash String
   role         Role      @default(CLIENT)
   salonId      String?
-  salonSetup   Boolean   @default(false)
-  
-  // ADĂUGAT AICI:
-  avatarUrl    String?   @db.Text // Folosim @db.Text pentru a permite șiruri Base64 lungi
+  salonSetup   Boolean  @default(false)
+  avatarUrl    String?
 
   appointments Appointment[]
   reviews      Review[]
+  salons       Salon[]
 
   @@map("users")
 }
 
-// ... restul modelelor (Salon, Staff, etc) ...
+model Salon {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  address   String?
+  phone     String?
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  staff     Staff[]
+  appointments Appointment[]
+  reviews   Review[]
+
+  @@map("salons")
+}
+
+model Staff {
+  id        String   @id @default(uuid())
+  name      String
+  salonId   String
+  salon     Salon    @relation(fields: [salonId], references: [id])
+  appointments Appointment[]
+
+  @@map("staff")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  date        DateTime
+  clientId    String
+  client      User     @relation(fields: [clientId], references: [id])
+  salonId     String
+  salon       Salon    @relation(fields: [salonId], references: [id])
+  staffId     String?
+  staff       Staff?   @relation(fields: [staffId], references: [id])
+  status      AppointmentStatus @default(PENDING)
+  review      Review?
+
+  @@map("appointments")
+}
+
+model Review {
+  id            String   @id @default(uuid())
+  rating        Int
+  comment       String?
+  appointmentId String   @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  salonId       String
+  salon         Salon    @relation(fields: [salonId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+}

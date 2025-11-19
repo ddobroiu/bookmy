@@ -1,127 +1,100 @@
-// /src/app/dashboard/data/route.js (ACTUALIZAT CU PUT)
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import moment from 'moment';
+import { Resend } from 'resend';
 import { getSession } from '@/lib/session';
 
-export async function GET(request) {
-    const session = await getSession();
-    if (!session?.salonId) return NextResponse.json({ message: 'Neautorizat' }, { status: 401 });
-
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
-
-    try {
-        if (type === 'services') {
-            const services = await prisma.service.findMany({ 
-                where: { salonId: session.salonId },
-                orderBy: { price: 'asc' }
-            });
-            return NextResponse.json(services);
-        }
-        if (type === 'staff') {
-            // Returnăm și programul angajatului
-            const staff = await prisma.staff.findMany({ 
-                where: { salonId: session.salonId },
-                orderBy: { name: 'asc' }
-            });
-            return NextResponse.json(staff);
-        }
-        return NextResponse.json([], { status: 400 });
-    } catch (error) {
-        return NextResponse.json({ message: 'Eroare server' }, { status: 500 });
-    }
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
-    const session = await getSession();
-    if (!session?.salonId) return NextResponse.json({ message: 'Neautorizat' }, { status: 401 });
-
-    const { type, data } = await request.json();
-
     try {
-        if (type === 'service') {
-            const newService = await prisma.service.create({
-                data: {
-                    name: data.name,
-                    price: parseFloat(data.price),
-                    duration: parseInt(data.duration),
-                    salonId: session.salonId
-                }
-            });
-            return NextResponse.json(newService, { status: 201 });
-        }
-        if (type === 'staff') {
-            const newStaff = await prisma.staff.create({
-                data: {
-                    name: data.name,
-                    role: data.role,
-                    salonId: session.salonId,
-                    // Program default (L-V 09-17) dacă nu e setat
-                    schedule: {} 
-                }
-            });
-            return NextResponse.json(newStaff, { status: 201 });
-        }
-        return NextResponse.json({ message: 'Tip invalid' }, { status: 400 });
-    } catch (error) {
-        return NextResponse.json({ message: 'Eroare la salvare' }, { status: 500 });
-    }
-}
+        const session = await getSession();
+        const body = await request.json();
+        const { service, staff, date, time, clientName, clientPhone, salonId } = body;
 
-// NOU: PUT pentru actualizare (folosit la salvarea programului)
-export async function PUT(request) {
-    const session = await getSession();
-    if (!session?.salonId) return NextResponse.json({ message: 'Neautorizat' }, { status: 401 });
+        if (!service || !date || !time || !salonId) return NextResponse.json({ message: 'Date incomplete.' }, { status: 400 });
 
-    const { type, data, id } = await request.json();
+        const appointmentStart = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm').toDate();
+        const appointmentEnd = moment(appointmentStart).add(service.duration, 'minutes').toDate();
 
-    try {
-        if (type === 'staff') {
-            // Verificăm dacă angajatul aparține salonului
-            const existing = await prisma.staff.findUnique({ where: { id } });
-            if (!existing || existing.salonId !== session.salonId) {
-                return NextResponse.json({ message: 'Fără drepturi' }, { status: 403 });
+        const conflict = await prisma.appointment.findFirst({
+            where: {
+                staffId: staff.id,
+                status: { not: 'CANCELLED' },
+                OR: [{ start: { lt: appointmentEnd }, end: { gt: appointmentStart } }]
+            }
+        });
+
+        if (conflict) return NextResponse.json({ message: 'Interval ocupat.' }, { status: 409 });
+        if (!session.userId) return NextResponse.json({ message: 'Te rugăm să te autentifici.' }, { status: 401 });
+
+        // 1. Verificăm politica de aprobare a salonului
+        const salon = await prisma.salon.findUnique({ where: { id: salonId } });
+        const staffMember = await prisma.staff.findUnique({ where: { id: staff.id } });
+        
+        // Dacă autoApprove e true, statusul e CONFIRMED. Dacă e false, e PENDING.
+        const initialStatus = salon.autoApprove ? 'CONFIRMED' : 'PENDING';
+
+        const newAppointment = await prisma.appointment.create({
+            data: {
+                start: appointmentStart,
+                end: appointmentEnd,
+                title: `${service.name} - ${clientName}`,
+                price: parseFloat(service.price),
+                paymentStatus: 'UNPAID',
+                status: initialStatus,
+                clientId: session.userId,
+                salonId: salonId,
+                staffId: staff.id,
+                clientName,
+                clientPhone
+            },
+            include: { salon: true, staff: true }
+        });
+
+        // 2. Notificări
+        if (initialStatus === 'CONFIRMED') {
+            // Flux standard: Confirmare directă
+            if (session.email) {
+                await resend.emails.send({
+                    from: 'BooksApp <rezervari@bookmy.ro>',
+                    to: [session.email],
+                    subject: `Rezervare Confirmată: ${service.name}`,
+                    html: `<p>Rezervare confirmată pentru ${moment(appointmentStart).format('DD/MM/YYYY HH:mm')}.</p>`
+                });
+            }
+        } else {
+            // Flux Aprobare: Notificăm Angajatul sau Salonul
+            const notifyEmail = staffMember?.email || (await prisma.user.findUnique({ where: { id: salon.ownerId } }))?.email;
+            
+            if (notifyEmail) {
+                await resend.emails.send({
+                    from: 'BooksApp Admin <admin@bookmy.ro>',
+                    to: [notifyEmail],
+                    subject: `🔔 Cerere Nouă: ${service.name}`,
+                    html: `
+                        <h2>Ai o cerere nouă de la ${clientName}!</h2>
+                        <p><strong>Dată:</strong> ${moment(appointmentStart).format('DD MMMM HH:mm')}</p>
+                        <p>Te rugăm să intri în Dashboard pentru a Aproba sau Refuza.</p>
+                        <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/calendar">Mergi la Calendar</a>
+                    `
+                });
             }
 
-            const updatedStaff = await prisma.staff.update({
-                where: { id },
-                data: {
-                    // Putem actualiza numele, rolul sau programul
-                    ...(data.name && { name: data.name }),
-                    ...(data.role && { role: data.role }),
-                    ...(data.schedule && { schedule: data.schedule })
-                }
-            });
-            return NextResponse.json(updatedStaff);
+            if (session.email) {
+                await resend.emails.send({
+                    from: 'BooksApp <rezervari@bookmy.ro>',
+                    to: [session.email],
+                    subject: `Cerere Trimisă: ${service.name}`,
+                    html: `<p>Cererea ta este în așteptare. Vei primi o notificare când salonul confirmă.</p>`
+                });
+            }
         }
-        return NextResponse.json({ message: 'Tip neimplementat' }, { status: 400 });
+
+        return NextResponse.json({ success: true, appointmentId: newAppointment.id }, { status: 201 });
+
     } catch (error) {
-        return NextResponse.json({ message: 'Eroare la actualizare' }, { status: 500 });
-    }
-}
-
-export async function DELETE(request) {
-    const session = await getSession();
-    if (!session?.salonId) return NextResponse.json({ message: 'Neautorizat' }, { status: 401 });
-
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
-    const id = searchParams.get('id');
-
-    try {
-        if (type === 'service') {
-            const service = await prisma.service.findUnique({ where: { id } });
-            if (service?.salonId !== session.salonId) return NextResponse.json({ error: 'Fără drepturi' }, { status: 403 });
-            await prisma.service.delete({ where: { id } });
-        }
-        if (type === 'staff') {
-             const member = await prisma.staff.findUnique({ where: { id } });
-             if (member?.salonId !== session.salonId) return NextResponse.json({ error: 'Fără drepturi' }, { status: 403 });
-             await prisma.staff.delete({ where: { id } });
-        }
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        return NextResponse.json({ message: 'Eroare la ștergere' }, { status: 500 });
+        console.error('Booking Error:', error);
+        return NextResponse.json({ message: 'Eroare server.' }, { status: 500 });
     }
 }

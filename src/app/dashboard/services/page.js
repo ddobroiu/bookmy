@@ -1,254 +1,245 @@
-// /src/app/dashboard/services/page.js (ACTUALIZAT CU MANAGEMENT PROGRAM)
-
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaTrash, FaEdit, FaUser, FaListUl, FaClock, FaTimes } from 'react-icons/fa';
-import styles from './services.module.css';
+import React, { useState, useEffect } from 'react';
+import { FaStore, FaClock, FaImage, FaSave, FaWifi, FaParking, FaCreditCard, FaWheelchair, FaCoffee, FaCheckCircle } from 'react-icons/fa';
+import { useToast } from '../../../context/ToastContext';
 
-// --- MODAL PENTRU PROGRAM ANGAJAT ---
-const StaffScheduleModal = ({ staff, onClose, onSave }) => {
-    const weekDays = ['luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă', 'duminică'];
-    
-    // Inițializăm cu programul existent sau default
-    const [schedule, setSchedule] = useState(staff.schedule && Object.keys(staff.schedule).length > 0 ? staff.schedule : 
-        weekDays.reduce((acc, day) => ({
-            ...acc,
-            [day]: { open: true, start: '09:00', end: '17:00', breaks: [] }
-        }), {})
-    );
+const WEEK_DAYS = ['luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă', 'duminică'];
+const AVAILABLE_FACILITIES = [
+    { id: 'wifi', label: 'Wi-Fi Gratuit', icon: FaWifi },
+    { id: 'parcare', label: 'Parcare', icon: FaParking },
+    { id: 'card', label: 'Plată Card', icon: FaCreditCard },
+    { id: 'acces', label: 'Acces Dizabilități', icon: FaWheelchair },
+    { id: 'cafea', label: 'Cafea/Ceai', icon: FaCoffee },
+];
 
-    const handleDayChange = (day, field, value) => {
-        setSchedule(prev => ({
-            ...prev,
-            [day]: { ...prev[day], [field]: value }
-        }));
-    };
-
-    const addBreak = (day) => {
-        setSchedule(prev => ({
-            ...prev,
-            [day]: { 
-                ...prev[day], 
-                breaks: [...(prev[day].breaks || []), { start: '13:00', end: '13:30' }] 
-            }
-        }));
-    };
-
-    const removeBreak = (day, index) => {
-        setSchedule(prev => {
-            const newBreaks = [...prev[day].breaks];
-            newBreaks.splice(index, 1);
-            return {
-                ...prev,
-                [day]: { ...prev[day], breaks: newBreaks }
-            };
-        });
-    };
-
-    const updateBreak = (day, index, field, value) => {
-        setSchedule(prev => {
-            const newBreaks = [...prev[day].breaks];
-            newBreaks[index] = { ...newBreaks[index], [field]: value };
-            return {
-                ...prev,
-                [day]: { ...prev[day], breaks: newBreaks }
-            };
-        });
-    };
-
-    const handleSave = () => {
-        onSave(staff.id, schedule);
-    };
-
-    return (
-        <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000}}>
-            <div style={{background:'white', padding:'30px', borderRadius:'12px', width:'700px', maxHeight:'90vh', overflowY:'auto', boxShadow:'0 5px 20px rgba(0,0,0,0.2)'}}>
-                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'20px'}}>
-                    <h2 style={{margin:0}}>Program {staff.name}</h2>
-                    <button onClick={onClose} style={{background:'none', border:'none', cursor:'pointer', fontSize:'20px'}}><FaTimes /></button>
-                </div>
-
-                {weekDays.map(day => (
-                    <div key={day} style={{borderBottom:'1px solid #eee', padding:'15px 0'}}>
-                        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px'}}>
-                            <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={schedule[day]?.open} 
-                                    onChange={(e) => handleDayChange(day, 'open', e.target.checked)}
-                                />
-                                <strong style={{textTransform:'capitalize', width:'80px'}}>{day}</strong>
-                            </div>
-                            
-                            {schedule[day]?.open ? (
-                                <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
-                                    <input type="time" value={schedule[day].start} onChange={(e) => handleDayChange(day, 'start', e.target.value)} style={{padding:'5px', borderRadius:'4px', border:'1px solid #ccc'}}/>
-                                    <span>-</span>
-                                    <input type="time" value={schedule[day].end} onChange={(e) => handleDayChange(day, 'end', e.target.value)} style={{padding:'5px', borderRadius:'4px', border:'1px solid #ccc'}}/>
-                                    <button onClick={() => addBreak(day)} style={{fontSize:'12px', color:'#007bff', background:'none', border:'none', cursor:'pointer', textDecoration:'underline'}}>+ Pauză</button>
-                                </div>
-                            ) : (
-                                <span style={{color:'#999', fontStyle:'italic'}}>Liber</span>
-                            )}
-                        </div>
-
-                        {/* Pauze */}
-                        {schedule[day]?.open && schedule[day].breaks?.map((brk, idx) => (
-                            <div key={idx} style={{display:'flex', gap:'10px', alignItems:'center', marginLeft:'110px', marginTop:'5px'}}>
-                                <span style={{fontSize:'12px', color:'#666'}}>Pauză:</span>
-                                <input type="time" value={brk.start} onChange={(e) => updateBreak(day, idx, 'start', e.target.value)} style={{padding:'3px', fontSize:'12px', border:'1px solid #ddd'}}/>
-                                <span>-</span>
-                                <input type="time" value={brk.end} onChange={(e) => updateBreak(day, idx, 'end', e.target.value)} style={{padding:'3px', fontSize:'12px', border:'1px solid #ddd'}}/>
-                                <FaTrash onClick={() => removeBreak(day, idx)} style={{color:'#e64c3c', cursor:'pointer', fontSize:'12px'}} />
-                            </div>
-                        ))}
-                    </div>
-                ))}
-
-                <div style={{marginTop:'20px', display:'flex', justifyContent:'flex-end', gap:'10px'}}>
-                    <button onClick={onClose} style={{padding:'10px 20px', background:'#f0f0f0', border:'none', borderRadius:'6px', cursor:'pointer'}}>Anulează</button>
-                    <button onClick={handleSave} style={{padding:'10px 20px', background:'#007bff', color:'white', border:'none', borderRadius:'6px', cursor:'pointer'}}>Salvează Programul</button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
-// Componentă Formular Adăugare (Refolosită)
-const AddForm = ({ onAdd, title, fields }) => {
-    const initialFormData = fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {});
-    const [formData, setFormData] = useState(initialFormData);
-    const handleSubmit = (e) => { e.preventDefault(); onAdd(formData); setFormData(initialFormData); };
-    const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
-
-    return (
-        <div className={styles.addFormContainer}>
-            <h3 className={styles.formTitle}>Adaugă {title}</h3>
-            <form onSubmit={handleSubmit} className={styles.formRow}>
-                {fields.map(field => (
-                    <div key={field.name} className={styles.fieldGroup} style={{ flex: field.flex || 1 }}>
-                        <label className={styles.label}>{field.label}</label>
-                        <input type={field.type || 'text'} name={field.name} value={formData[field.name]} onChange={handleChange} required className={styles.input} placeholder={field.placeholder || ''} />
-                    </div>
-                ))}
-                <button type="submit" className={styles.addButton}><FaPlus /> Adaugă</button>
-            </form>
-        </div>
-    );
-};
-
-export default function DashboardServicesPage() {
-    const [services, setServices] = useState([]);
-    const [staff, setStaff] = useState([]);
+export default function SalonSettingsPage() {
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
-    const [editingStaff, setEditingStaff] = useState(null); // Pentru modal
+    const [saving, setSaving] = useState(false);
+    const [activeTab, setActiveTab] = useState('general');
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const servicesRes = await fetch('/api/dashboard/data?type=services');
-            const staffRes = await fetch('/api/dashboard/data?type=staff');
-            if (servicesRes.ok) setServices(await servicesRes.json());
-            if (staffRes.ok) setStaff(await staffRes.json());
-        } catch (error) { console.error(error); } finally { setLoading(false); }
+    const [formData, setFormData] = useState({
+        name: '',
+        address: '',
+        phone: '',
+        description: '',
+        category: '',
+        coverImage: '',
+        autoApprove: true, // Default True
+        schedule: {},
+        facilities: []
+    });
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const res = await fetch('/api/partner/salon');
+                if (res.ok) {
+                    const data = await res.json();
+                    setFormData(prev => ({
+                        ...prev,
+                        ...data,
+                        schedule: data.schedule && Object.keys(data.schedule).length > 0 ? data.schedule : 
+                            WEEK_DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: true, start: '09:00', end: '17:00' } }), {})
+                    }));
+                }
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        }
+        loadData();
     }, []);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
-
-    const handleAdd = async (data, type) => {
-        try {
-            const response = await fetch('/api/dashboard/data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, data }),
-            });
-            if (response.ok) fetchData();
-        } catch (error) { console.error(error); }
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleDelete = async (id, type) => {
-        if (!confirm('Sigur?')) return;
-        try {
-            const response = await fetch(`/api/dashboard/data?type=${type}&id=${id}`, { method: 'DELETE' });
-            if (response.ok) fetchData();
-        } catch (error) { console.error(error); }
-    };
-
-    // Salvare Program Angajat
-    const saveStaffSchedule = async (id, schedule) => {
-        try {
-            const response = await fetch('/api/dashboard/data', {
-                method: 'PUT', // Metodă nouă în API
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'staff', id, data: { schedule } })
-            });
-            if (response.ok) {
-                alert('Program salvat!');
-                setEditingStaff(null);
-                fetchData();
-            } else {
-                alert('Eroare la salvare.');
+    const handleScheduleChange = (day, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            schedule: {
+                ...prev.schedule,
+                [day]: { ...prev.schedule[day], [field]: value }
             }
-        } catch (e) { console.error(e); alert('Eroare rețea.'); }
+        }));
     };
 
-    if (loading) return <div style={{padding: '50px', textAlign: 'center'}}>Se încarcă...</div>;
+    const toggleFacility = (id) => {
+        setFormData(prev => {
+            const current = prev.facilities || [];
+            const exists = current.includes(id);
+            return {
+                ...prev,
+                facilities: exists ? current.filter(f => f !== id) : [...current, id]
+            };
+        });
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setFormData(prev => ({ ...prev, coverImage: reader.result }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const res = await fetch('/api/partner/salon', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (res.ok) showToast('Setările au fost actualizate!', 'success');
+            else showToast('Eroare la salvare.', 'error');
+        } catch (e) {
+            showToast('Eroare de rețea.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const tabStyle = (tab) => ({
+        padding: '10px 20px', cursor: 'pointer',
+        borderBottom: activeTab === tab ? '2px solid #007bff' : '2px solid transparent',
+        color: activeTab === tab ? '#007bff' : '#666',
+        fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px'
+    });
+
+    if (loading) return <div style={{padding:'40px', textAlign:'center'}}>Se încarcă setările...</div>;
 
     return (
-        <div className={styles.container}>
-            <h1 className={styles.headerTitle}>Servicii și Echipă</h1>
-
-            {/* Servicii */}
-            <div className={styles.sectionContainer}>
-                <h2 className={styles.sectionHeader}><FaListUl /> Servicii</h2>
-                <AddForm onAdd={(data) => handleAdd(data, 'service')} title="Serviciu" fields={[
-                    { name: 'name', label: 'Nume', flex: 2 }, { name: 'price', label: 'Preț', type: 'number', flex: 1 }, { name: 'duration', label: 'Min', type: 'number', flex: 1 }
-                ]} />
-                {services.map(s => (
-                    <div key={s.id} className={styles.listItem}>
-                        <span><strong>{s.name}</strong> - {s.price} RON ({s.duration} min)</span>
-                        <button onClick={() => handleDelete(s.id, 'service')} className={styles.actionButton} style={{color:'#e64c3c'}}><FaTrash /></button>
-                    </div>
-                ))}
+        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
+                <h1 style={{ fontSize: '28px', color: '#1c2e40', margin: 0 }}>Setări Salon</h1>
+                <button 
+                    onClick={handleSave} 
+                    disabled={saving}
+                    style={{background:'#1aa858', color:'white', border:'none', padding:'10px 20px', borderRadius:'8px', cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:'8px'}}
+                >
+                    <FaSave /> {saving ? 'Se salvează...' : 'Salvează Tot'}
+                </button>
             </div>
 
-            {/* Staff */}
-            <div className={styles.sectionContainer}>
-                <h2 className={styles.sectionHeader}><FaUser /> Echipă</h2>
-                <AddForm onAdd={(data) => handleAdd(data, 'staff')} title="Angajat" fields={[
-                    { name: 'name', label: 'Nume', flex: 2 }, { name: 'role', label: 'Rol', flex: 1 }
-                ]} />
-                {staff.map(m => (
-                    <div key={m.id} className={styles.listItem}>
-                        <div style={{display:'flex', flexDirection:'column'}}>
-                            <strong>{m.name}</strong>
-                            <span style={{fontSize:'12px', color:'#666'}}>{m.role}</span>
-                        </div>
-                        <div style={{display:'flex', gap:'10px'}}>
-                            {/* Buton Program */}
-                            <button 
-                                onClick={() => setEditingStaff(m)}
-                                className={styles.actionButton} 
-                                style={{color:'#007bff', border:'1px solid #007bff', padding:'5px 10px', borderRadius:'4px', display:'flex', alignItems:'center', gap:'5px'}}
-                            >
-                                <FaClock /> Program
-                            </button>
-                            <button onClick={() => handleDelete(m.id, 'staff')} className={styles.actionButton} style={{color:'#e64c3c'}}><FaTrash /></button>
-                        </div>
-                    </div>
-                ))}
+            <div style={{ display: 'flex', borderBottom: '1px solid #ddd', marginBottom: '30px' }}>
+                <div onClick={() => setActiveTab('general')} style={tabStyle('general')}><FaStore /> General</div>
+                <div onClick={() => setActiveTab('schedule')} style={tabStyle('schedule')}><FaClock /> Program</div>
+                <div onClick={() => setActiveTab('visual')} style={tabStyle('visual')}><FaImage /> Vizual & Facilități</div>
             </div>
 
-            {/* Modal Program */}
-            {editingStaff && (
-                <StaffScheduleModal 
-                    staff={editingStaff} 
-                    onClose={() => setEditingStaff(null)} 
-                    onSave={saveStaffSchedule} 
-                />
-            )}
+            <div style={{ background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                
+                {activeTab === 'general' && (
+                    <div style={{display:'flex', flexDirection:'column', gap:'20px'}}>
+                        <div>
+                            <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Nume Salon</label>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange} style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
+                        </div>
+                        <div>
+                            <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Adresă</label>
+                            <input type="text" name="address" value={formData.address} onChange={handleChange} style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
+                        </div>
+                        <div>
+                            <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Telefon Contact</label>
+                            <input type="text" name="phone" value={formData.phone || ''} onChange={handleChange} placeholder="07xx xxx xxx" style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
+                        </div>
+                        <div>
+                            <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Descriere (Despre noi)</label>
+                            <textarea name="description" value={formData.description || ''} onChange={handleChange} rows="5" style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
+                        </div>
+
+                        {/* --- ZONA APROBARE --- */}
+                        <div style={{ marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', border: '1px solid #ffeeba' }}>
+                            <h3 style={{ fontSize: '16px', marginBottom: '10px', color: '#856404', marginTop: 0 }}>Setări Rezervare</h3>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: '600', color: '#856404' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={!formData.autoApprove} 
+                                    onChange={(e) => setFormData(prev => ({ ...prev, autoApprove: !e.target.checked }))}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Necesită aprobarea mea pentru fiecare programare nouă
+                            </label>
+                            <p style={{ margin: '5px 0 0 28px', fontSize: '13px', color: '#856404' }}>
+                                Dacă bifezi, clienții vor primi statusul "În Așteptare" și tu (sau angajatul) va trebui să aprobi manual din calendar.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'schedule' && (
+                    <div>
+                        <p style={{marginBottom:'20px', color:'#666'}}>Definește programul general de funcționare al afacerii.</p>
+                        {WEEK_DAYS.map(day => {
+                            const isOpen = formData.schedule[day]?.open;
+                            return (
+                                <div key={day} style={{display:'flex', alignItems:'center', padding:'10px 0', borderBottom:'1px dashed #eee'}}>
+                                    <div style={{width:'100px', textTransform:'capitalize', fontWeight:'600'}}>{day}</div>
+                                    <label style={{marginRight:'20px', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px'}}>
+                                        <input type="checkbox" checked={isOpen} onChange={(e) => handleScheduleChange(day, 'open', e.target.checked)} />
+                                        {isOpen ? 'Deschis' : 'Închis'}
+                                    </label>
+                                    {isOpen && (
+                                        <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
+                                            <input type="time" value={formData.schedule[day]?.start} onChange={(e) => handleScheduleChange(day, 'start', e.target.value)} style={{padding:'5px', borderRadius:'4px', border:'1px solid #ddd'}} />
+                                            <span>-</span>
+                                            <input type="time" value={formData.schedule[day]?.end} onChange={(e) => handleScheduleChange(day, 'end', e.target.value)} style={{padding:'5px', borderRadius:'4px', border:'1px solid #ddd'}} />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {activeTab === 'visual' && (
+                    <div>
+                        <div style={{marginBottom:'30px'}}>
+                            <h3 style={{fontSize:'16px', marginBottom:'15px'}}>Imagine Copertă</h3>
+                            <div style={{width:'100%', height:'200px', borderRadius:'10px', backgroundColor:'#f0f0f0', overflow:'hidden', position:'relative', border:'2px dashed #ddd'}}>
+                                {formData.coverImage ? (
+                                    <img src={formData.coverImage} alt="Cover" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                                ) : (
+                                    <div style={{height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'#999'}}>Nicio imagine selectată</div>
+                                )}
+                                <input 
+                                    type="file" 
+                                    onChange={handleImageUpload} 
+                                    style={{position:'absolute', top:0, left:0, width:'100%', height:'100%', opacity:0, cursor:'pointer'}} 
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style={{fontSize:'16px', marginBottom:'15px'}}>Facilități</h3>
+                            <div style={{display:'flex', flexWrap:'wrap', gap:'15px'}}>
+                                {AVAILABLE_FACILITIES.map(fac => {
+                                    const Icon = fac.icon;
+                                    const isSelected = formData.facilities?.includes(fac.id);
+                                    return (
+                                        <div 
+                                            key={fac.id} 
+                                            onClick={() => toggleFacility(fac.id)}
+                                            style={{
+                                                padding:'10px 15px', borderRadius:'8px', 
+                                                border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
+                                                backgroundColor: isSelected ? '#e6f0ff' : 'white',
+                                                color: isSelected ? '#007bff' : '#555',
+                                                cursor:'pointer', display:'flex', alignItems:'center', gap:'8px', fontWeight:'600'
+                                            }}
+                                        >
+                                            <Icon /> {fac.label}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

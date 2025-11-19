@@ -1,4 +1,4 @@
-// /src/app/dashboard/layout.js (COD COMPLET ACTUALIZAT)
+// /src/app/dashboard/layout.js (COD COMPLET - INCLUDE MESAJE)
 
 'use client';
 
@@ -9,13 +9,15 @@ import Link from 'next/link';
 import { 
   FaCalendarAlt, 
   FaListUl, 
-  FaStore, 
   FaImages, 
   FaStar, 
   FaSignOutAlt, 
   FaCrown, 
   FaHome, 
-  FaConciergeBell 
+  FaConciergeBell,
+  FaCog,
+  FaFileContract,
+  FaEnvelope // <-- Iconița pentru Mesaje
 } from 'react-icons/fa';
 import './dashboard.css'; 
 
@@ -39,8 +41,8 @@ const DashboardSidebar = () => {
   const getLinkStyle = (path) => {
       const isActive = pathname === path;
       return {
-          color: isActive ? '#fff' : '#e6e6e6', // Alb dacă e activ, gri deschis altfel
-          backgroundColor: isActive ? '#007bff' : 'transparent', // Albastru dacă e activ
+          color: isActive ? '#fff' : '#e6e6e6',
+          backgroundColor: isActive ? '#007bff' : 'transparent',
           fontWeight: isActive ? '700' : '500',
           display: 'flex',
           alignItems: 'center',
@@ -56,7 +58,7 @@ const DashboardSidebar = () => {
     <aside style={{ 
         width: '260px', 
         flexShrink: 0, 
-        backgroundColor: '#1c2e40', // Culoarea sidebar-ului
+        backgroundColor: '#1c2e40', 
         color: 'white', 
         padding: '20px', 
         display: 'flex', 
@@ -65,7 +67,7 @@ const DashboardSidebar = () => {
         position: 'sticky',
         top: 0,
         height: '100vh',
-        overflowY: 'auto' // Scroll intern dacă meniul e prea lung
+        overflowY: 'auto'
     }}>
       
       {/* Header Sidebar */}
@@ -84,9 +86,13 @@ const DashboardSidebar = () => {
             <FaCalendarAlt style={{marginRight: '10px', fontSize: '18px'}}/> Calendar
         </Link>
 
-        {/* LINK NOU: Waitlist */}
         <Link href="/dashboard/waitlist" style={getLinkStyle('/dashboard/waitlist')}>
             <FaConciergeBell style={{marginRight: '10px', fontSize: '18px'}}/> Listă Așteptare
+        </Link>
+
+        {/* --- LINK MESAJE (ADĂUGAT) --- */}
+        <Link href="/dashboard/messages" style={getLinkStyle('/dashboard/messages')}>
+            <FaEnvelope style={{marginRight: '10px', fontSize: '18px'}}/> Mesaje
         </Link>
         
         <Link href="/dashboard/services" style={getLinkStyle('/dashboard/services')}>
@@ -100,9 +106,13 @@ const DashboardSidebar = () => {
         <Link href="/dashboard/reviews" style={getLinkStyle('/dashboard/reviews')}>
             <FaStar style={{marginRight: '10px', fontSize: '18px'}}/> Recenzii
         </Link>
+
+        <Link href="/dashboard/forms" style={getLinkStyle('/dashboard/forms')}>
+            <FaFileContract style={{marginRight: '10px', fontSize: '18px'}}/> Formulare
+        </Link>
         
-        <Link href="/dashboard/onboarding" style={getLinkStyle('/dashboard/onboarding')}>
-            <FaStore style={{marginRight: '10px', fontSize: '18px'}}/> Profil Afacere
+        <Link href="/dashboard/settings" style={getLinkStyle('/dashboard/settings')}>
+            <FaCog style={{marginRight: '10px', fontSize: '18px'}}/> Setări Salon
         </Link>
         
         <Link href="/dashboard/subscription" style={{...getLinkStyle('/dashboard/subscription'), color: '#ffc107'}}>

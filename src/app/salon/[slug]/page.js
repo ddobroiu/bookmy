@@ -1,4 +1,4 @@
-// /src/app/salon/[slug]/page.js (COD COMPLET - DINAMIC PENTRU ORICE SERVICIU)
+// /src/app/salon/[slug]/page.js (COD COMPLET ACTUALIZAT)
 
 'use client';
 
@@ -7,27 +7,28 @@ import {
     FaStar, FaMapMarkerAlt, FaClock, FaCalendarAlt, FaInfoCircle, 
     FaListUl, FaCamera, FaUtensils, FaHeart, FaShareAlt, FaPhoneAlt 
 } from 'react-icons/fa';
-import styles from '../salon.module.css'; // Putem păstra numele fișierului CSS, dar clasele sunt generice
+import styles from '../salon.module.css'; 
 import BookingWidget from '../../../components/BookingWidget'; 
 import AIChatBooking from '../../../components/AIChatBooking';
 import Reviews from '../../../components/Reviews';
 
-// Helper pentru a determina tipul afacerii
+// Helper pentru a determina tipul afacerii și a adapta interfața
 const getVenueType = (category) => {
     const cat = category ? category.toLowerCase() : '';
     if (cat.includes('restaurant') || cat.includes('bar') || cat.includes('cafenea')) return 'food';
     if (cat.includes('medical') || cat.includes('clinic') || cat.includes('dentist')) return 'health';
     if (cat.includes('auto') || cat.includes('service')) return 'auto';
-    return 'beauty'; // Default
+    return 'beauty'; // Default (Saloane)
 };
 
-export default function VenuePage({ params }) {
+export default function SalonPage({ params }) {
     const { slug } = params;
     
     const [venueData, setVenueData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('services');
 
+    // Fetch date salon
     useEffect(() => {
         const fetchAndSetData = async () => {
             try {
@@ -58,17 +59,19 @@ export default function VenuePage({ params }) {
         servicesTab: venueType === 'food' ? 'Meniu / Rezervări' : (venueType === 'health' ? 'Consultații' : 'Servicii'),
         portfolioTab: venueType === 'food' ? 'Galerie & Atmosferă' : 'Portofoliu',
         ctaButton: venueType === 'food' ? 'Rezervă Masă' : 'Programează-te',
-        staffLabel: venueType === 'health' ? 'Medici' : 'Echipă',
     };
 
-    // Simulare Imagini (Placeholder)
-    const galleryImages = [
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80", // Restaurant vibe
-        "https://images.unsplash.com/photo-1559333086-b08d33726f9a?auto=format&fit=crop&w=400&q=80", // Office/Clinic
-        "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=400&q=80", // General
-    ];
+    // Folosim imaginile din API (portofoliu) sau un set de placeholder dacă nu există
+    const galleryImages = venueData.portfolioItems && venueData.portfolioItems.length > 0 
+        ? venueData.portfolioItems.map(item => item.url) 
+        : [
+            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1559333086-b08d33726f9a?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"
+        ];
 
-    // --- Componente Interne ---
+    // --- Componente Interne de Tab-uri ---
 
     const TabNavigation = () => (
         <div className={styles.tabsNav}>
@@ -82,7 +85,7 @@ export default function VenuePage({ params }) {
                 className={`${styles.tabButton} ${activeTab === 'reviews' ? styles.activeTab : ''}`}
                 onClick={() => setActiveTab('reviews')}
             >
-                Recenzii ({venueData.reviews || 0})
+                Recenzii ({venueData.reviews?.length || venueData.reviewCount || 0})
             </button>
             <button 
                 className={`${styles.tabButton} ${activeTab === 'portfolio' ? styles.activeTab : ''}`}
@@ -107,7 +110,7 @@ export default function VenuePage({ params }) {
                     Oferta Noastră
                 </h3>
                 
-                {venueData.services.length === 0 ? (
+                {(!venueData.services || venueData.services.length === 0) ? (
                     <p>Nu există opțiuni listate momentan.</p>
                 ) : (
                     venueData.services.map(service => (
@@ -152,13 +155,14 @@ export default function VenuePage({ params }) {
                     <FaMapMarkerAlt style={{color: '#007bff'}}/> <strong>Adresă:</strong> {venueData.address}
                 </div>
                 <div className={styles.infoDetail}>
-                    <FaPhoneAlt style={{color: '#007bff'}}/> <strong>Telefon:</strong> 07xx xxx xxx
+                    <FaPhoneAlt style={{color: '#007bff'}}/> <strong>Telefon:</strong> {venueData.phone || 'Nespecificat'}
                 </div>
              </div>
 
-             <h4 className={styles.categoryTitle}>Facilități</h4>
+             <h4 className={styles.categoryTitle} style={{marginTop: '20px'}}>Facilități</h4>
              <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                 {['Wi-Fi', 'Parcare', 'Card Acceptat', 'Accesibil scaun rulant'].map(tag => (
+                {/* Afișăm facilitățile reale din DB sau unele default */}
+                {(venueData.facilities && venueData.facilities.length > 0 ? venueData.facilities : ['Wi-Fi', 'Parcare', 'Card Acceptat']).map(tag => (
                      <span key={tag} style={{background: '#f0f0f0', padding: '5px 10px', borderRadius: '15px', fontSize: '13px'}}>{tag}</span>
                  ))}
              </div>
@@ -170,10 +174,15 @@ export default function VenuePage({ params }) {
             
             {/* 1. Hero / Cover */}
             <div className={styles.coverImage} style={{
-                // Schimbăm culoarea gradientului în funcție de tip (Restaurant = Portocaliu, Medical = Albastru/Verde, etc.)
-                background: venueType === 'food' ? 'linear-gradient(90deg, #ff9966, #ff5e62)' : 
-                            venueType === 'health' ? 'linear-gradient(90deg, #11998e, #38ef7d)' : 
-                            'linear-gradient(90deg, #007bff, #00d2ff)'
+                backgroundImage: venueData.coverImage ? `url(${venueData.coverImage})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                // Fallback gradient dacă nu are poză
+                background: !venueData.coverImage ? (
+                    venueType === 'food' ? 'linear-gradient(90deg, #ff9966, #ff5e62)' : 
+                    venueType === 'health' ? 'linear-gradient(90deg, #11998e, #38ef7d)' : 
+                    'linear-gradient(90deg, #007bff, #00d2ff)'
+                ) : undefined
             }}></div>
 
             {/* 2. Header Venue */}
@@ -184,8 +193,8 @@ export default function VenuePage({ params }) {
                         <div style={{display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
                             <div className={styles.rating}>
                                 <FaStar style={{ color: '#ffc107' }} />
-                                <strong>{venueData.averageRating || '5.0'}</strong> 
-                                <span style={{color: '#999'}}>({venueData.reviews || 0} recenzii)</span>
+                                <strong>{venueData.averageRating ? venueData.averageRating.toFixed(1) : '5.0'}</strong> 
+                                <span style={{color: '#999'}}>({venueData.reviews?.length || venueData.reviewCount || 0} recenzii)</span>
                             </div>
                             <span className={styles.infoDetail}>
                                 {venueData.category ? venueData.category.toUpperCase() : 'DIVERS'}
@@ -204,26 +213,31 @@ export default function VenuePage({ params }) {
                 </div>
             </div>
 
-            {/* 3. Content Grid */}
+            {/* 3. Layout Principal Grid */}
             <div className={styles.contentGrid}>
                 
-                {/* Coloana Stânga */}
+                {/* Coloana Stânga (Conținut Principal) */}
                 <div className={styles.mainColumn}>
                     <TabNavigation />
 
                     {activeTab === 'services' && <ServicesTab />}
+                    
                     {activeTab === 'reviews' && (
                         <div className={styles.servicesContainer}>
+                            {/* Componenta Reviews - Integrată */}
                             <Reviews salonId={venueData.id} />
                         </div>
                     )}
+                    
                     {activeTab === 'portfolio' && <GalleryTab />}
+                    
                     {activeTab === 'about' && <AboutTab />}
                 </div>
 
-                {/* Coloana Dreapta (Sticky Booking) */}
+                {/* Coloana Dreapta (Booking Sticky) */}
                 <div className={styles.bookingColumn}>
                     
+                    {/* Card Program */}
                     <div className={styles.card}>
                         <h3 style={{margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px'}}>
                             <FaClock style={{color: '#007bff'}}/> Program
@@ -240,11 +254,12 @@ export default function VenuePage({ params }) {
                         </div>
                     </div>
 
-                    {/* Widget-ul de rezervare adaptat pentru servicii generice */}
-                    <BookingWidget services={venueData.services} salonId={venueData.id} />
+                    {/* Widget-ul de rezervare */}
+                    <BookingWidget services={venueData.services || []} salonId={venueData.id} />
                     
+                    {/* Chat Botul AI - Aici trimitem ID-ul pentru a lega conversația de acest salon */}
                     <div style={{marginTop: '20px'}}>
-                        <AIChatBooking />
+                        <AIChatBooking salonId={venueData.id} />
                     </div>
 
                 </div>

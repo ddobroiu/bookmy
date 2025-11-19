@@ -1,0 +1,168 @@
+/* /src/app/dashboard/services/services.module.css */
+
+.container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.headerTitle {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #1c2e40;
+}
+
+.headerDescription {
+  margin-bottom: 30px;
+  color: #666;
+}
+
+/* --- Formular Adăugare --- */
+.addFormContainer {
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border: 1px solid #eee;
+}
+
+.formTitle {
+  border-bottom: 1px dashed #ddd;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #333;
+}
+
+.formRow {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.addButton {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.addButton:hover {
+  background-color: #0056b3;
+}
+
+/* --- Secțiuni Listă --- */
+.sectionContainer {
+  margin-bottom: 40px;
+  border: 1px solid #eee;
+  padding: 25px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #1c2e40;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px dashed #eee;
+  align-items: center;
+  transition: background-color 0.1s;
+}
+
+.listItem:hover {
+  background-color: #fafafa;
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.itemName {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
+.itemMetaPrimary {
+  margin-left: 15px;
+  color: #007bff;
+  font-weight: 700;
+}
+
+.itemMetaSecondary {
+  margin-left: 15px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* --- Butoane Acțiuni --- */
+.actionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  font-size: 16px;
+}
+
+.editBtn {
+  color: #007bff;
+  margin-right: 5px;
+}
+
+.editBtn:hover {
+  background-color: #e6f0ff;
+}
+
+.deleteBtn {
+  color: #e64c3c;
+}
+
+.deleteBtn:hover {
+  background-color: #ffe6e6;
+}

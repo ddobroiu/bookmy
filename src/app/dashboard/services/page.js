@@ -1,11 +1,12 @@
-// /app/dashboard/services/page.js (COD COMPLET ACTUALIZAT CU API)
+// /src/app/dashboard/services/page.js (COD COMPLET MODERNIZAT)
 
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaTrash, FaEdit, FaUser, FaListUl } from 'react-icons/fa';
+import styles from './services.module.css'; // Importăm stilurile CSS Module
 
-// Componentă re-utilizabilă pentru Adăugare
+// Componentă re-utilizabilă pentru Adăugare (Refactorizată)
 const AddForm = ({ onAdd, title, fields }) => {
     const initialFormData = fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {});
     const [formData, setFormData] = useState(initialFormData);
@@ -21,30 +22,30 @@ const AddForm = ({ onAdd, title, fields }) => {
     };
 
     return (
-        <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3 style={{ borderBottom: '1px dashed #ddd', paddingBottom: '10px' }}>Adaugă {title}</h3>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+        <div className={styles.addFormContainer}>
+            <h3 className={styles.formTitle}>Adaugă {title}</h3>
+            <form onSubmit={handleSubmit} className={styles.formRow}>
                 {fields.map(field => (
-                    <div key={field.name} style={{ flex: field.flex || 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '3px' }}>{field.label}</label>
+                    <div key={field.name} className={styles.fieldGroup} style={{ flex: field.flex || 1 }}>
+                        <label className={styles.label}>{field.label}</label>
                         <input
                             type={field.type || 'text'}
                             name={field.name}
                             value={formData[field.name]}
                             onChange={handleChange}
                             required
-                            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                            className={styles.input}
+                            placeholder={field.placeholder || ''}
                         />
                     </div>
                 ))}
-                <button type="submit" style={{ padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>
+                <button type="submit" className={styles.addButton}>
                     <FaPlus /> Adaugă
                 </button>
             </form>
         </div>
     );
 };
-
 
 export default function DashboardServicesPage() {
     const [services, setServices] = useState([]);
@@ -86,8 +87,7 @@ export default function DashboardServicesPage() {
             });
             
             if (response.ok) {
-                // Reîncărcăm lista pentru a avea datele actualizate
-                fetchData(); 
+                fetchData(); // Reîncărcăm lista
             } else {
                 alert(`Eroare la adăugarea ${type}!`);
             }
@@ -106,8 +106,7 @@ export default function DashboardServicesPage() {
             });
             
             if (response.ok) {
-                // Reîncărcăm lista
-                fetchData();
+                fetchData(); // Reîncărcăm lista
             } else {
                 alert(`Eroare la ștergerea ${type}!`);
             }
@@ -118,13 +117,13 @@ export default function DashboardServicesPage() {
     
     // --- Definiții de câmpuri pentru formulare ---
     const serviceFields = [
-        { name: 'name', label: 'Nume Serviciu', flex: 2 },
-        { name: 'price', label: 'Preț (RON)', type: 'number', flex: 1 },
-        { name: 'duration', label: 'Durată (min)', type: 'number', flex: 1 },
+        { name: 'name', label: 'Nume Serviciu', flex: 2, placeholder: 'ex: Tuns Clasic' },
+        { name: 'price', label: 'Preț (RON)', type: 'number', flex: 1, placeholder: '50' },
+        { name: 'duration', label: 'Durată (min)', type: 'number', flex: 1, placeholder: '30' },
     ];
     const staffFields = [
-        { name: 'name', label: 'Nume Angajat', flex: 2 },
-        { name: 'role', label: 'Rol', flex: 1 },
+        { name: 'name', label: 'Nume Angajat', flex: 2, placeholder: 'ex: Ion Popescu' },
+        { name: 'role', label: 'Rol', flex: 1, placeholder: 'ex: Senior Stylist' },
     ];
 
 
@@ -133,48 +132,52 @@ export default function DashboardServicesPage() {
     }
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
-            <h1>Gestionarea Serviciilor și Angajaților</h1>
-            <p style={{ marginBottom: '30px', color: '#666' }}>
-                Definește prețurile, duratele și echipa ta.
+        <div className={styles.container}>
+            <h1 className={styles.headerTitle}>Gestionarea Serviciilor și Angajaților</h1>
+            <p className={styles.headerDescription}>
+                Definește prețurile, duratele și echipa ta pentru a permite programări online.
             </p>
 
             {/* Zonă Servicii */}
-            <div style={{ marginBottom: '40px', border: '1px solid #eee', padding: '20px', backgroundColor: 'white', borderRadius: '8px' }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaListUl /> Servicii Oferite</h2>
+            <div className={styles.sectionContainer}>
+                <h2 className={styles.sectionHeader}><FaListUl /> Servicii Oferite</h2>
                 
                 <AddForm onAdd={(data) => handleAdd(data, 'service')} title="Serviciu Nou" fields={serviceFields} />
                 
+                {services.length === 0 && <p style={{color: '#999', fontStyle: 'italic'}}>Niciun serviciu adăugat încă.</p>}
+
                 {services.map(service => (
-                    <div key={service.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #eee', alignItems: 'center' }}>
+                    <div key={service.id} className={styles.listItem}>
                         <div>
-                            <strong>{service.name}</strong>
-                            <span style={{ marginLeft: '15px', color: '#007bff', fontWeight: 600 }}>{service.price} RON</span>
-                            <span style={{ marginLeft: '15px', color: '#555', fontSize: '14px' }}>({service.duration} min)</span>
+                            <strong className={styles.itemName}>{service.name}</strong>
+                            <span className={styles.itemMetaPrimary}>{service.price} RON</span>
+                            <span className={styles.itemMetaSecondary}>({service.duration} min)</span>
                         </div>
                         <div>
-                            <button onClick={() => alert('Editare nu este implementată încă')} style={{ marginRight: '10px', color: '#007bff', background: 'none', border: 'none', cursor: 'pointer' }}><FaEdit /></button>
-                            <button onClick={() => handleDelete(service.id, 'service')} style={{ color: '#e64c3c', background: 'none', border: 'none', cursor: 'pointer' }}><FaTrash /></button>
+                            <button onClick={() => alert('Editare nu este implementată încă')} className={`${styles.actionButton} ${styles.editBtn}`} title="Editează"><FaEdit /></button>
+                            <button onClick={() => handleDelete(service.id, 'service')} className={`${styles.actionButton} ${styles.deleteBtn}`} title="Șterge"><FaTrash /></button>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Zonă Angajați (Staff) */}
-            <div style={{ border: '1px solid #eee', padding: '20px', backgroundColor: 'white', borderRadius: '8px' }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaUser /> Angajați (Staff)</h2>
+            <div className={styles.sectionContainer}>
+                <h2 className={styles.sectionHeader}><FaUser /> Angajați (Staff)</h2>
                 
                 <AddForm onAdd={(data) => handleAdd(data, 'staff')} title="Angajat Nou" fields={staffFields} />
 
+                {staff.length === 0 && <p style={{color: '#999', fontStyle: 'italic'}}>Niciun angajat adăugat încă.</p>}
+
                 {staff.map(member => (
-                    <div key={member.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #eee', alignItems: 'center' }}>
+                    <div key={member.id} className={styles.listItem}>
                         <div>
-                            <strong>{member.name}</strong>
-                            <span style={{ marginLeft: '15px', color: '#555', fontSize: '14px' }}>{member.role}</span>
+                            <strong className={styles.itemName}>{member.name}</strong>
+                            <span className={styles.itemMetaSecondary}>{member.role}</span>
                         </div>
                         <div>
-                            <button onClick={() => alert('Editare nu este implementată încă')} style={{ marginRight: '10px', color: '#007bff', background: 'none', border: 'none', cursor: 'pointer' }}><FaEdit /></button>
-                            <button onClick={() => handleDelete(member.id, 'staff')} style={{ color: '#e64c3c', background: 'none', border: 'none', cursor: 'pointer' }}><FaTrash /></button>
+                            <button onClick={() => alert('Editare nu este implementată încă')} className={`${styles.actionButton} ${styles.editBtn}`} title="Editează"><FaEdit /></button>
+                            <button onClick={() => handleDelete(member.id, 'staff')} className={`${styles.actionButton} ${styles.deleteBtn}`} title="Șterge"><FaTrash /></button>
                         </div>
                     </div>
                 ))}

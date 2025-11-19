@@ -1,16 +1,20 @@
-// /src/app/login/page.js (COD COMPLET FINAL)
+// /src/app/login/page.js (COD COMPLET ACTUALIZAT CU "OCHI" PENTRU PAROLĂ)
 
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link'; // Importă Link
+import Link from 'next/link'; 
 import { useToast } from '../../context/ToastContext'; 
 import styles from '@/components/AuthForm.module.css'; 
+// Importăm iconițele pentru ochi
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // State pentru vizibilitatea parolei
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
@@ -38,7 +42,7 @@ export default function LoginPage() {
         if (userRole === 'partner') {
           router.push('/dashboard');
         } else {
-          router.push('/profil'); 
+          router.push('/'); 
         }
         
       } else {
@@ -64,24 +68,51 @@ export default function LoginPage() {
           <input
             type="email"
             id="email"
-            className={styles.inputField} // Adăugat clasa
+            className={styles.inputField}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
 
-        {/* Password */}
+        {/* Password cu buton de vizualizare */}
         <div className={styles.formGroup}>
           <label htmlFor="password">Parolă</label>
-          <input
-            type="password"
-            id="password"
-            className={styles.inputField} // Adăugat clasa
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              // Schimbăm tipul din 'password' în 'text' în funcție de state
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              className={styles.inputField}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              // Adăugăm padding la dreapta ca să nu se suprapună textul peste iconiță
+              style={{ paddingRight: '40px' }} 
+            />
+            
+            {/* Butonul "Ochi" */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#666',
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0',
+                top: '15px' // Ajustat pentru a se alinia cu input-ul care are margin-top: 5px în CSS
+              }}
+              tabIndex="-1" // Să nu fie selectat când dai Tab prin formular
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
         </div>
 
         <button type="submit" className={styles.submitButton} disabled={loading}>

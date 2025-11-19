@@ -34,6 +34,7 @@ const DashboardSidebar = () => {
         <a href="/dashboard">Acasă</a>
         <a href="/dashboard/calendar">Calendar</a>
         <a href="/dashboard/services">Servicii</a>
+        <a href="/dashboard/onboarding">Profil Afacere</a>
         {/* LINK NOU: Pagina de abonament */}
         <a href="/dashboard/subscription" style={{fontWeight: 700, color: '#ffc107'}}>Abonament</a> 
       </nav>

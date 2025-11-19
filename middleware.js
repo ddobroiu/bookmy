@@ -1,16 +1,20 @@
 // /middleware.js (COD COMPLET ACTUALIZAT CU LOGICA DE ONBOARDING)
 import { NextResponse } from 'next/server';
+import { getIronSession } from 'iron-session';
+import { sessionOptions } from './src/lib/session'; // Importă sessionOptions
 
 // Rutele protejate:
 const PARTNER_PROTECTED_ROUTES = ['/dashboard'];
 const ONBOARDING_ROUTE = '/dashboard/onboarding';
 
-export function middleware(request) {
+export async function middleware(request) { // Adaugă 'async' aici
   const pathname = request.nextUrl.pathname;
 
-  // Citim cookie-urile
-  const userRole = request.cookies.get('user-role')?.value;
-  const salonSetup = request.cookies.get('salon-setup')?.value === 'true'; // Convertim string la boolean
+  // Citim sesiunea folosind iron-session
+  const session = await getIronSession(request, NextResponse.next(), sessionOptions);
+
+  const userRole = session.role;
+  const salonSetup = session.salonSetup;
 
   // Logica 1: Verificare Autentificare și Rol (Logică anterioară)
   const isPartnerRoute = PARTNER_PROTECTED_ROUTES.some(route => 
@@ -18,7 +22,7 @@ export function middleware(request) {
   );
   
   if (isPartnerRoute) {
-    if (userRole !== 'partner') {
+    if (userRole !== 'PARTENER') { // Folosește 'PARTENER' conform enum-ului Prisma
       // Redirecționează la logare dacă nu este partener
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname); 
@@ -31,13 +35,13 @@ export function middleware(request) {
   const isOnboardingRoute = pathname.startsWith(ONBOARDING_ROUTE);
 
   // Daca e partener si nu a facut setup, trebuie sa mearga la onboarding
-  if (userRole === 'partner' && !salonSetup && !isOnboardingRoute) {
+  if (userRole === 'PARTENER' && !salonSetup && !isOnboardingRoute) {
     // Redirecționăm partenerul nou la pagina de setup
     return NextResponse.redirect(new URL(ONBOARDING_ROUTE, request.url));
   }
   
   // Daca e partener si A FACUT setup, dar incearca sa acceseze /onboarding, il trimitem la /dashboard
-  if (userRole === 'partner' && salonSetup && isOnboardingRoute) {
+  if (userRole === 'PARTENER' && salonSetup && isOnboardingRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

@@ -1,10 +1,10 @@
-// /src/components/ClientSidebar.jsx
+// /src/components/ClientSidebar.jsx (ACTUALIZAT CU FAVORITE ȘI SETĂRI)
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FaUser, FaCalendarAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaSignOutAlt, FaHeart, FaCog, FaWallet } from 'react-icons/fa';
 
 export default function ClientSidebar() {
     const pathname = usePathname();
@@ -25,37 +25,41 @@ export default function ClientSidebar() {
     const menuItems = [
         { name: 'Detalii Profil', href: '/profil', icon: <FaUser /> },
         { name: 'Istoric Programări', href: '/profil/programari', icon: <FaCalendarAlt /> },
+        { name: 'Locații Favorite', href: '/profil/favorite', icon: <FaHeart /> }, // NOU
+        { name: 'Setări & Plăți', href: '/profil/setari', icon: <FaCog /> }, // NOU
     ];
 
     const sidebarStyle = {
-        width: '250px',
+        width: '280px',
         backgroundColor: 'white',
-        padding: '25px',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        padding: '30px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
         height: 'fit-content',
         display: 'flex',
         flexDirection: 'column',
+        border: '1px solid #f0f0f0'
     };
 
     const linkStyle = (isActive) => ({
         display: 'flex',
         alignItems: 'center',
-        padding: '12px 15px',
-        margin: '5px 0',
-        borderRadius: '8px',
+        padding: '14px 18px',
+        margin: '8px 0',
+        borderRadius: '10px',
         textDecoration: 'none',
         color: isActive ? '#007bff' : '#555',
         backgroundColor: isActive ? '#e6f0ff' : 'transparent',
-        fontWeight: isActive ? '600' : '500',
+        fontWeight: isActive ? '700' : '500',
         transition: 'all 0.2s',
+        border: isActive ? '1px solid rgba(0, 123, 255, 0.1)' : '1px solid transparent'
     });
 
     return (
         <aside style={sidebarStyle}>
-            <div style={{ marginBottom: '30px', paddingBottom: '15px', borderBottom: '1px solid #eee' }}>
-                <h3 style={{ margin: 0, fontSize: '18px', color: '#1c2e40' }}>Panou Client</h3>
-                <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#888' }}>Gestionează contul tău</p>
+            <div style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #eee' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', color: '#1c2e40', fontWeight: '800' }}>Contul Meu</h3>
+                <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#888' }}>Gestionează preferințele</p>
             </div>
             
             <nav style={{ flex: 1 }}>
@@ -73,20 +77,22 @@ export default function ClientSidebar() {
             <button 
                 onClick={handleLogout}
                 style={{
-                    marginTop: '30px',
+                    marginTop: '40px',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '12px 15px',
+                    justifyContent: 'center',
+                    padding: '14px',
                     border: '1px solid #ffebee',
                     backgroundColor: '#fff5f5',
                     color: '#e64c3c',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     cursor: 'pointer',
-                    fontWeight: '600',
-                    width: '100%'
+                    fontWeight: '700',
+                    width: '100%',
+                    transition: 'background 0.2s'
                 }}
             >
-                <FaSignOutAlt style={{ marginRight: '12px' }} /> Deconectare
+                <FaSignOutAlt style={{ marginRight: '10px' }} /> Deconectare
             </button>
         </aside>
     );

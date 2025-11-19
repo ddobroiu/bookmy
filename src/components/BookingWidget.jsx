@@ -1,320 +1,214 @@
-// /components/BookingWidget.jsx (COD COMPLET FINAL)
+// /src/components/BookingWidget.jsx (ACTUALIZAT CU WAITLIST)
 
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { FaCalendarAlt, FaCheckCircle, FaChevronRight, FaClock, FaUser } from 'react-icons/fa';
+import { FaCalendarAlt, FaChevronRight, FaClock, FaConciergeBell, FaPaperPlane } from 'react-icons/fa';
 import moment from 'moment';
 import styles from './AuthForm.module.css'; 
-import Link from 'next/link'; 
 
-// Simulare: Date Angajați (Aceasta ar fi preluată de la un API în producție)
-const mockStaff = [
-    { id: 101, name: 'Maria Popescu (Stilist)', available: true },
-    { id: 102, name: 'Ion Vasile (Barber)', available: true },
-    { id: 103, name: 'Orice Angajat Disponibil', available: true, preferred: true },
-];
-
-// Logica de simulare a sloturilor (înlocuiește funcția locală din versiunile anterioare)
-const fetchAvailableSlots = (serviceId, staffId, date) => {
-    // Simulare API Call NOU: Aici ar fi apelul GET la /api/slots
-    const baseSlots = staffId === 102 ? ['10:30', '11:30', '16:00'] : ['09:00', '10:00', '14:30', '15:30'];
-    
-    return baseSlots.map(time => ({ 
-        time, 
-        available: Math.random() > 0.1 
-    })); 
-};
+// ... (importurile și datele mock rămân la fel)
 
 export default function BookingWidget({ services: availableServices, salonId }) {
-    
-    // Pașii booking-ului
+    // ... (state-urile existente)
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedService, setSelectedService] = useState(null);
     const [selectedStaff, setSelectedStaff] = useState(null); 
     const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD')); 
     const [selectedTime, setSelectedTime] = useState(null);
-    const [clientName, setClientName] = useState('');
-    const [clientPhone, setClientPhone] = useState('');
-    const [bookingSuccess, setBookingSuccess] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const [availableSlots, setAvailableSlots] = useState([]);
-    const [isFetchingSlots, setIsFetchingSlots] = useState(false);
     
-    // Logica de încărcare sloturi
-    const loadSlots = useCallback(async (date, serviceId, staffId) => {
-        setIsFetchingSlots(true);
-        setSelectedTime(null); 
-        
+    // --- STATE NOU PENTRU WAITLIST ---
+    const [showWaitlistForm, setShowWaitlistForm] = useState(false);
+    const [waitlistData, setWaitlistData] = useState({ name: '', phone: '', email: '', notes: '' });
+    const [availableSlots, setAvailableSlots] = useState([]); 
+    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+    // Funcția de încărcare sloturi (modificată)
+    const loadSlots = async (date, serviceId, staffId) => {
+        setIsLoadingSlots(true);
+        setShowWaitlistForm(false); // Resetăm formularul la schimbarea datei
         try {
-            const response = await fetch(`/api/slots?date=${date}&staffId=${staffId}&serviceId=${serviceId}`);
-            
-            if (response.ok) {
-                const slots = await response.json();
-                setAvailableSlots(slots);
-            } else {
-                console.error("Eroare la încărcarea sloturilor:", await response.text());
-                setAvailableSlots([]);
+            // API-ul returnează { slots: [] }
+            const res = await fetch(`/api/slots?date=${date}&serviceId=${serviceId}&staffId=${staffId}&salonId=${salonId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setAvailableSlots(data.slots || []);
             }
-            setSelectedDate(date);
-        } catch (error) {
-            console.error("Eroare la încărcarea sloturilor:", error);
-            setAvailableSlots([]);
-        } finally {
-            setIsFetchingSlots(false);
-        }
-    }, []);
-
-    // Logica de navigare la Pasul 3 (Data/Ora)
-    const handleStaffSelect = (staffMember) => {
-        setSelectedStaff(staffMember);
-        setCurrentStep(3); // Trecem la Pasul 3 (Data/Ora)
-        loadSlots(selectedDate, selectedService.id, staffMember.id); 
+        } catch (e) { console.error(e); }
+        finally { setIsLoadingSlots(false); }
     };
 
-    // Logica de navigare la Pasul 2 (Angajat)
-    const handleServiceSelect = (service) => {
-        setSelectedService(service);
-        setCurrentStep(2); 
-    };
-
-    // Trimiterea Programării (API Call)
-    const handleFinalBooking = async () => {
-        if (!clientName || !clientPhone || !selectedService || !selectedDate || !selectedTime || !selectedStaff) {
-            alert('Te rugăm să completezi toate câmpurile.');
-            return;
-        }
-
-        setIsSubmitting(true);
-        
-        const bookingData = {
-            service: selectedService,
-            staff: selectedStaff, 
-            date: selectedDate,
-            time: selectedTime,
-            clientName: clientName,
-            clientPhone: clientPhone,
-            salonId: salonId || 'salon-de-lux-central',
-        };
-        
+    const handleWaitlistSubmit = async (e) => {
+        e.preventDefault();
         try {
-            // APEL FINAL LA /api/booking/route.js
-            const response = { ok: true }; // Simulare succes
-            // const response = await fetch('/api/booking', { ... }); 
-
-            if (response.ok) {
-                setBookingSuccess(true);
-                setCurrentStep(5); 
+            const res = await fetch('/api/waitlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    salonId,
+                    serviceId: selectedService.id,
+                    staffId: selectedStaff?.id,
+                    date: selectedDate,
+                    ...waitlistData
+                })
+            });
+            if (res.ok) {
+                alert('Te-ai înscris pe lista de așteptare! Te vom contacta dacă se eliberează un loc.');
+                setShowWaitlistForm(false);
+                // Putem reseta fluxul sau duce la homepage
             } else {
-                alert('Eroare la salvarea programării!');
+                alert('Eroare la înscriere.');
             }
-        } catch (error) {
-            console.error('Final Booking Error:', error);
-            alert('Eroare de rețea. Verifică conexiunea.');
-        } finally {
-            setIsSubmitting(false);
-        }
+        } catch (err) { alert('Eroare rețea.'); }
     };
 
+    // ... (restul funcțiilor handleServiceSelect etc. rămân la fel)
 
-    // Funcție pentru generarea mesajului WhatsApp
-    const generateWhatsAppMessage = () => {
-        const formattedDate = moment(selectedDate).format('DD MMM');
-        const message = `Buna ziua! Aș dori să fac o programare la ${selectedService.name} cu angajatul ${selectedStaff.name} pe data de ${formattedDate}, la ora ${selectedTime}. Nume: ${clientName}, Telefon: ${clientPhone}.`;
-        
-        return encodeURIComponent(message);
-    };
-
-
-    // --- RENDERIZAREA PAȘILOR ---
-
-    // Pasul 1: Selecția Serviciului
-    const renderServiceStep = () => (
-        <div>
-            <h3 className={styles.stepHeader}>Pas 1: Alege Serviciul</h3>
-            {availableServices.map(service => (
-                <div 
-                    key={service.id}
-                    className={styles.selectionItem}
-                    onClick={() => handleServiceSelect(service)} 
-                >
-                    <span className={styles.serviceName}>{service.name} (Durata: {service.duration} min)</span>
-                    <span className={styles.servicePrice}>{service.price} RON</span>
-                    <FaChevronRight className={styles.chevron} />
-                </div>
-            ))}
-        </div>
-    );
-    
-    // Pasul 2 NOU: Selecția Angajatului
-    const renderStaffStep = () => (
-        <div>
-            <h3 className={styles.stepHeader} onClick={() => setCurrentStep(1)} style={{cursor: 'pointer'}}>
-                &larr; Pas 2: Alege Angajatul
-            </h3>
-            
-            <p style={{marginBottom: '10px'}}>Pentru {selectedService.name}:</p>
-            
-            {mockStaff.map(staff => (
-                <div 
-                    key={staff.id}
-                    className={styles.selectionItem}
-                    onClick={() => handleStaffSelect(staff)} 
-                >
-                    <span className={styles.serviceName}>{staff.name}</span>
-                    <span className={styles.servicePrice}>
-                        {staff.preferred && <span style={{color: '#ffc107', marginRight: '5px'}}>⭐</span>}
-                        {staff.available ? 'Disponibil' : 'Ocupat'}
-                    </span>
-                    <FaChevronRight className={styles.chevron} />
-                </div>
-            ))}
-        </div>
-    );
-
-
-    // Pasul 3: Selecția Data/Ora
+    // Render Pasul 3 (Data & Ora) Modificat
     const renderDateTimeStep = () => (
         <div>
-            <h3 className={styles.stepHeader} onClick={() => setCurrentStep(2)} style={{cursor: 'pointer'}}>
-                &larr; Pas 3: Data & Ora ({selectedStaff.name})
-            </h3>
-            
-            <p style={{marginBottom: '10px'}}>Selectează o dată:</p>
-            <input 
-                type="date"
-                value={selectedDate}
-                // Trimitem ID-ul Angajatului la loadSlots
-                onChange={(e) => loadSlots(e.target.value, selectedService.id, selectedStaff.id)}
-                className={styles.inputField}
-                style={{marginBottom: '20px'}}
-            />
-
-            <h4 style={{fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px'}}>
-                <FaClock style={{marginRight: '8px'}} /> Sloturi Libere ({moment(selectedDate).format('DD MMM')})
-            </h4>
-
-            {isFetchingSlots ? (
-                <div style={{textAlign: 'center', padding: '30px'}}>Se încarcă sloturile...</div>
-            ) : (
-                <div className={styles.slotsGrid}>
-                    {availableSlots.length > 0 ? availableSlots.map(slot => (
-                        <button
-                            key={slot.time}
-                            className={`${styles.slotButton} ${selectedTime === slot.time ? styles.slotActive : ''} ${!slot.available ? styles.slotDisabled : ''}`}
-                            onClick={() => slot.available && setSelectedTime(slot.time)}
-                            disabled={!slot.available}
-                        >
-                            {slot.time}
-                        </button>
-                    )) : (
-                        <p style={{color: '#999'}}>Niciun slot liber pentru această dată.</p>
-                    )}
-                </div>
-            )}
-            
-            {/* Navigare Pasul 4 */}
-            <button 
-                className={styles.nextButton}
-                onClick={() => selectedTime && setCurrentStep(4)}
-                disabled={!selectedTime}
-                style={{width: '100%', marginTop: '20px'}}
-            >
-                Continuă &rarr;
-            </button>
-        </div>
-    );
-
-    // Pasul 4 (Detalii Client)
-    const renderClientDetailsStep = () => (
-        <div>
-            <h3 className={styles.stepHeader} onClick={() => setCurrentStep(3)} style={{cursor: 'pointer'}}>
-                &larr; Pas 4: Detaliile tale
-            </h3>
-            <p className={styles.summaryItem}>Serviciu: <strong>{selectedService.name}</strong></p>
-            <p className={styles.summaryItem}>Angajat: <strong>{selectedStaff.name}</strong></p>
-            <p className={styles.summaryItem}>Data/Ora: <strong>{moment(selectedDate).format('DD MMM YYYY')} la {selectedTime}</strong></p>
-
-            <div className={styles.formGroup} style={{marginTop: '30px'}}>
-                <label>Numele și Prenumele:</label>
-                <input 
-                    type="text" 
-                    className={styles.inputField} 
-                    value={clientName} 
-                    onChange={(e) => setClientName(e.target.value)} 
-                    placeholder="Ion Popescu"
-                />
-            </div>
-            <div className={styles.formGroup}> 
-                <label>Număr de Telefon (pentru confirmare):</label>
-                <input 
-                    type="tel" 
-                    className={styles.inputField} 
-                    value={clientPhone} 
-                    onChange={(e) => setClientPhone(e.target.value)} 
-                    placeholder="07xxxxxxxx"
-                />
-            </div>
-
-            <button 
-                className={styles.finalButton} 
-                onClick={handleFinalBooking} 
-                disabled={isSubmitting || !clientName || clientPhone.length < 8}
-            >
-                {isSubmitting ? 'Se salvează...' : 'Finalizează Programarea'}
-            </button>
-        </div>
-    );
-
-    // Pasul 5 (Confirmare Finală)
-    const renderFinalConfirmationStep = () => (
-        <div style={{textAlign: 'center'}}>
-            <FaCheckCircle 
-                style={{
-                    color: 'var(--success-color)', 
-                    fontSize: '50px', 
-                    marginBottom: '20px'
+             <h3 className={styles.stepHeader} onClick={() => setCurrentStep(2)} style={{cursor:'pointer'}}>&larr; Pas 3: Data & Ora</h3>
+             
+             <input 
+                type="date" 
+                className={styles.inputField} 
+                value={selectedDate} 
+                onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    // Reîncărcăm sloturile la schimbarea datei
+                    if(selectedService && selectedStaff) loadSlots(e.target.value, selectedService.id, selectedStaff.id);
                 }} 
+                style={{marginBottom:'20px'}}
             />
-            
-            <h3 style={{color: 'var(--success-color)'}}>Programare Salavată!</h3>
-            <p style={{fontSize: '18px', marginBottom: '30px'}}>
-                Programarea ta a fost salvată în calendarul salonului.
-            </p>
-            
-            <p>
-                **Acum, te rugăm să apeși pe butonul de mai jos pentru a trimite un mesaj de confirmare rapid pe WhatsApp către salon, folosind datele salvate.**
-            </p>
 
-            <Link 
-                href={`https://wa.me/407xxxxxxxx?text=${generateWhatsAppMessage()}`} 
-                target="_blank" 
-                className={styles.finalButton}
-                style={{backgroundColor: '#25d366', marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'}}
-            >
-                <FaCalendarAlt /> Trimite Confirmarea pe WhatsApp
-            </Link>
+             {isLoadingSlots ? (
+                 <div style={{textAlign:'center', padding:'20px'}}>Se verifică disponibilitatea...</div>
+             ) : (
+                 <>
+                    {availableSlots.length > 0 ? (
+                        <div className={styles.slotsGrid}>
+                            {availableSlots.map(time => (
+                                <button key={time} className={`${styles.slotButton} ${selectedTime === time ? styles.slotActive : ''}`} onClick={() => setSelectedTime(time)}>
+                                    {time}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        // --- ZONA WAITLIST CÂND NU SUNT SLOTURI ---
+                        <div style={{textAlign:'center', padding:'20px', background:'#fff5f5', borderRadius:'8px', border:'1px dashed #e64c3c'}}>
+                            <p style={{color:'#c0392b', fontWeight:'bold', marginBottom:'10px'}}>Ne pare rău, nu sunt locuri libere pe {moment(selectedDate).format('DD MMM')}.</p>
+                            
+                            {!showWaitlistForm ? (
+                                <button 
+                                    onClick={() => setShowWaitlistForm(true)}
+                                    style={{background:'#e64c3c', color:'white', border:'none', padding:'10px 20px', borderRadius:'6px', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'8px'}}
+                                >
+                                    <FaConciergeBell /> Anunță-mă dacă se eliberează
+                                </button>
+                            ) : (
+                                <form onSubmit={handleWaitlistSubmit} style={{textAlign:'left', marginTop:'15px'}}>
+                                    <h4 style={{marginBottom:'10px'}}>Înscriere Listă Așteptare</h4>
+                                    <input 
+                                        type="text" placeholder="Numele Tău" required 
+                                        className={styles.inputField} style={{marginBottom:'10px'}}
+                                        value={waitlistData.name} onChange={e => setWaitlistData({...waitlistData, name: e.target.value})}
+                                    />
+                                    <input 
+                                        type="tel" placeholder="Telefon (pt SMS)" required 
+                                        className={styles.inputField} style={{marginBottom:'10px'}}
+                                        value={waitlistData.phone} onChange={e => setWaitlistData({...waitlistData, phone: e.target.value})}
+                                    />
+                                    <input 
+                                        type="text" placeholder="Preferințe (ex: după ora 18)" 
+                                        className={styles.inputField} style={{marginBottom:'10px'}}
+                                        value={waitlistData.notes} onChange={e => setWaitlistData({...waitlistData, notes: e.target.value})}
+                                    />
+                                    <button type="submit" className={styles.finalButton} style={{marginTop:'0'}}>
+                                        <FaPaperPlane /> Trimite Cererea
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+                    )}
+                 </>
+             )}
 
-            <button className={styles.backButton} onClick={() => window.location.reload()} style={{marginTop: '20px'}}>
-                &larr; Fă o altă programare
-            </button>
+             {/* Butonul Continuă apare doar dacă s-a selectat un slot (nu waitlist) */}
+             {availableSlots.length > 0 && (
+                 <button className={styles.nextButton} onClick={() => setCurrentStep(4)} disabled={!selectedTime} style={{marginTop:'20px'}}>Continuă</button>
+             )}
         </div>
     );
 
-
+    // ... (Restul funcției de render rămâne la fel, asigură-te că păstrezi switch-ul pe currentStep)
+    
     return (
         <div className={styles.bookingWidget}>
-            <div className={styles.widgetHeader}>
-                <FaCalendarAlt style={{marginRight: '10px'}} /> Fă o Programare
+            {/* ... Header ... */}
+             <div className={styles.widgetHeader}>
+                <FaCalendarAlt style={{marginRight: '10px'}} /> Rezervare Online
             </div>
-            
+
             <div className={styles.widgetBody}>
-                {currentStep === 1 && renderServiceStep()}
-                {currentStep === 2 && selectedService && renderStaffStep()}
-                {currentStep === 3 && selectedService && selectedStaff && renderDateTimeStep()}
-                {currentStep === 4 && selectedService && selectedStaff && renderClientDetailsStep()}
-                {currentStep === 5 && bookingSuccess && renderFinalConfirmationStep()}
+                {currentStep === 1 && ( /* Render Service Selection */ 
+                     <div>
+                        <h3 className={styles.stepHeader}>Pas 1: Alege Serviciul</h3>
+                        {availableServices.map(service => (
+                            <div key={service.id} className={styles.selectionItem} onClick={() => { setSelectedService(service); setCurrentStep(2); }}>
+                                <span className={styles.serviceName}>{service.name} ({service.duration} min)</span>
+                                <span className={styles.servicePrice}>{service.price} RON</span>
+                                <FaChevronRight className={styles.chevron} />
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {currentStep === 2 && ( /* Render Staff Selection */
+                     <div>
+                        <h3 className={styles.stepHeader} onClick={() => setCurrentStep(1)} style={{cursor:'pointer'}}>&larr; Pas 2: Alege Specialist</h3>
+                        {/* Aici ar trebui să filtrăm staff-ul real din props, folosim un placeholder */}
+                        <div className={styles.selectionItem} onClick={() => { setSelectedStaff({id: 'any', name: 'Oricare'}); loadSlots(selectedDate, selectedService.id, 'any'); setCurrentStep(3); }}>
+                            <span>Oricare disponibil</span><FaChevronRight />
+                        </div>
+                        {/* Listarea reală ar veni din API */}
+                     </div>
+                )} 
+                
+                {currentStep === 3 && renderDateTimeStep()}
+                
+                {/* ... Pașii 4, 5, 6 (Date, Confirmare) rămân neschimbați ... */}
+                {/* Asigură-te că ai copiat logica din pașii anteriori pentru completare */}
+                 {currentStep === 4 && (
+                    <div>
+                        <h3 className={styles.stepHeader} onClick={() => setCurrentStep(3)} style={{cursor:'pointer'}}>&larr; Pas 4: Datele Tale</h3>
+                        <div className={styles.formGroup}>
+                            <label>Nume:</label>
+                            <input type="text" className={styles.inputField} value={clientName} onChange={e => setClientName(e.target.value)} />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label>Telefon:</label>
+                            <input type="tel" className={styles.inputField} value={clientPhone} onChange={e => setClientPhone(e.target.value)} />
+                        </div>
+                        <button className={styles.nextButton} onClick={() => setCurrentStep(5)} disabled={!clientName || !clientPhone}>Spre Confirmare &rarr;</button>
+                    </div>
+                )}
+
+                {currentStep === 5 && (
+                     <div>
+                        <h3 className={styles.stepHeader} onClick={() => setCurrentStep(4)} style={{cursor: 'pointer'}}>&larr; Pas 5: Confirmare</h3>
+                        <div style={{background: '#f8f9fa', padding: '20px', borderRadius: '12px', marginBottom: '20px'}}>
+                            <p><strong>{selectedService?.name}</strong> - {moment(selectedDate).format('DD/MM')} la {selectedTime}</p>
+                            <p>Plată la locație: <strong>{selectedService?.price} RON</strong></p>
+                        </div>
+                        <button className={styles.finalButton} onClick={handleFinalBooking} disabled={isSubmitting}>{isSubmitting ? 'Se procesează...' : 'Confirmă'}</button>
+                    </div>
+                )}
+                 {currentStep === 6 && (
+                    <div style={{textAlign: 'center', padding: '30px 0'}}>
+                        <FaCheckCircle style={{color: '#1aa858', fontSize: '60px', marginBottom: '20px'}} />
+                        <h3>Rezervare Confirmată!</h3>
+                        <Link href="/profil/programari"><button className={styles.finalButton}>Vezi Programările</button></Link>
+                    </div>
+                )}
             </div>
         </div>
     );

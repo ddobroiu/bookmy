@@ -1,58 +1,69 @@
-// /components/CategoryCard.jsx (COD COMPLET ACTUALIZAT CU REACT ICONS)
+// /src/components/CategoryCard.jsx (COD ACTUALIZAT PENTRU TOATE DOMENIILE)
 
 import React from 'react';
 import Link from 'next/link';
-// Importăm pictograme moderne din Font Awesome (Fa)
-import { FaCut, FaPaintBrush, FaHands, FaSpa, FaRunning, FaPen, FaHeart } from 'react-icons/fa';
+// Importăm un set extins de pictograme pentru toate categoriile
+import { 
+    FaCut, FaStethoscope, FaSpa, FaUtensils, FaDumbbell, 
+    FaCar, FaHome, FaGraduationCap, FaPaw, FaGlassCheers, 
+    FaBriefcase, FaTaxi, FaEllipsisH
+} from 'react-icons/fa';
 
-// Funcție ajutătoare pentru a mapa numele pictogramei la componentă
 const getIconComponent = (iconName) => {
   const icons = {
-    'hair': FaCut,         // Tuns & Coafat
-    'nails': FaPaintBrush, // Manichiură (folosim FaPaintBrush ca exemplu)
-    'massage': FaHands,    // Masaj
-    'beauty': FaSpa,       // Cosmetică/Spa
-    'stylist': FaHeart,    // Stilist (folosim FaHeart ca exemplu)
-    'tattoo': FaPen,       // Tatuaje
-    'fitness': FaRunning,  // Fitness
+    'beauty': FaCut,          // Frumusețe (Frizerie, Unghii, Make-up)
+    'health': FaStethoscope,  // Sănătate (Dentist, Medici, Psiholog)
+    'wellness': FaSpa,        // Relaxare (Masaj, Spa, Terapii)
+    'food': FaUtensils,       // Horeca (Restaurante, Cafenele)
+    'fitness': FaDumbbell,    // Sport (Săli, Antrenori, Yoga)
+    'auto': FaCar,            // Auto (Service, Spălătorie)
+    'home': FaHome,           // Casă (Instalatori, Curățenie)
+    'education': FaGraduationCap, // Educație (Meditații, Cursuri)
+    'pets': FaPaw,            // Animale (Vet, Grooming)
+    'events': FaGlassCheers,  // Evenimente (Foto, DJ, Florării)
+    'pro': FaBriefcase,       // Business (Avocați, Notari)
+    'transport': FaTaxi,      // Transport (Închirieri, Transfer)
+    'other': FaEllipsisH      // Altele
   };
-  return icons[iconName] || FaHeart; // Pictogramă implicită dacă nu este găsită
+  return icons[iconName] || FaEllipsisH; 
 };
 
 const cardStyle = {
   backgroundColor: 'white',
-  padding: '20px',
-  borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+  padding: '25px',
+  borderRadius: '16px', // Rotunjire mai modernă
+  boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
   textAlign: 'center',
   fontWeight: '600',
-  transition: 'transform 0.2s, box-shadow 0.2s',
+  transition: 'all 0.3s ease',
   cursor: 'pointer',
-  minHeight: '120px',
+  minHeight: '150px',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   textDecoration: 'none',
-  color: '#333'
+  color: '#1c2e40',
+  border: '1px solid transparent'
 };
 
 const iconStyle = {
-  fontSize: '36px',
-  marginBottom: '10px',
-  color: '#007bff'
+  fontSize: '42px',
+  marginBottom: '15px',
+  color: '#007bff' // Culoarea brandului
 };
 
-const CategoryCard = ({ title, iconName, href }) => {
-  // Obținem componenta pictogramă
+const CategoryCard = ({ title, iconName, href, subtext }) => {
   const IconComponent = getIconComponent(iconName); 
   
   return (
-    <Link href={href} style={cardStyle}>
+    <Link href={href} style={cardStyle} className="category-card-hover">
       <div style={iconStyle}>
-        <IconComponent /> {/* Renderizăm componenta pictogramă */}
+        <IconComponent /> 
       </div>
-      <div>{title}</div>
+      <div style={{fontSize: '18px', marginBottom: '5px'}}>{title}</div>
+      {/* Afișăm și un mic text descriptiv (ex: "3 Subcategorii") */}
+      {subtext && <div style={{fontSize: '12px', color: '#888', fontWeight: '400'}}>{subtext}</div>}
     </Link>
   );
 };

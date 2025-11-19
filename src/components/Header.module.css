@@ -1,15 +1,13 @@
-/* /components/Header.module.css */
-
-.primaryColor {
-  /* Variabila CSS pentru a păstra consistența */
-  --primary-color: #007bff;
-}
+/* /src/components/Header.module.css (STILURI ACTUALIZATE) */
 
 .header {
   background-color: white;
-  padding: 10px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid var(--primary-color);
+  padding: 15px 0;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .headerInner {
@@ -21,33 +19,87 @@
   padding: 0 20px;
 }
 
+/* --- Logo --- */
 .logo {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
-  color: var(--primary-color);
+  color: #007bff; /* Primary Color */
   text-decoration: none;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+}
+
+/* --- Navigare Centrală (NOU) --- */
+.navContainer {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.navLink {
+  text-decoration: none;
+  color: #555;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+  padding: 5px 0;
+}
+
+.navLink:hover {
+  color: #007bff;
+}
+
+/* --- Auth & Butoane (Re-utilizate din AuthStatus) --- */
+.authContainer {
+    display: flex;
+    align-items: center;
 }
 
 .buttonBase {
   padding: 10px 20px;
   margin-left: 15px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px; /* Mai rotunjit */
   border: 1px solid;
-  font-weight: 600;
-  transition: background-color 0.3s, color 0.3s;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .loginBtn {
-  composes: buttonBase; /* Moștenim stilurile de bază */
+  composes: buttonBase;
   background-color: transparent;
   color: #333;
-  border-color: #ccc;
+  border-color: transparent;
+}
+
+.loginBtn:hover {
+    background-color: #f5f7fa;
+    color: #007bff;
 }
 
 .registerBtn {
-  composes: buttonBase; /* Moștenim stilurile de bază */
-  background-color: var(--primary-color);
+  composes: buttonBase;
+  background-color: #007bff;
   color: white;
-  border-color: var(--primary-color);
+  border-color: #007bff;
+  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+}
+
+.registerBtn:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+/* Responsive: Ascunde meniul central pe mobil */
+@media (max-width: 768px) {
+    .navContainer {
+        display: none;
+    }
 }

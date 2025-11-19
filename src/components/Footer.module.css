@@ -1,0 +1,111 @@
+/* /src/components/Footer.module.css (NOU) */
+
+.footer {
+    background-color: #1c2e40; /* Albastru închis profesional */
+    color: #e6e6e6;
+    padding: 60px 0 20px 0;
+    margin-top: auto; /* Asigură poziționarea corectă în flexbox */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr; /* Prima coloană mai lată */
+    gap: 40px;
+    margin-bottom: 50px;
+}
+
+.column h3.logo {
+    font-size: 24px;
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.column h4 {
+    font-size: 16px;
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.description {
+    color: #a0aab5;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.linkList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.linkList li {
+    margin-bottom: 10px;
+}
+
+.linkList a {
+    color: #a0aab5;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.linkList a:hover {
+    color: #007bff; /* Culoarea de accent la hover */
+}
+
+/* Bottom Bar */
+.bottomBar {
+    border-top: 1px solid #2c3e50;
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #718096;
+    font-size: 14px;
+}
+
+.socialIcons {
+    display: flex;
+    gap: 20px;
+}
+
+.socialIcons a {
+    color: #a0aab5;
+    font-size: 20px;
+    transition: color 0.2s;
+}
+
+.socialIcons a:hover {
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .grid {
+        grid-template-columns: 1fr; /* O singură coloană pe mobil */
+    }
+    .bottomBar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}

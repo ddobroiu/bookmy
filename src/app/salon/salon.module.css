@@ -1,22 +1,38 @@
-/* /app/salon/[slug]/salon.module.css */
+/* /src/app/salon/salon.module.css */
 
 .salonContainer {
     max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
+    margin: 0 auto;
+    padding: 0 20px 60px 20px;
 }
 
+/* --- Header & Hero --- */
 .header {
-    text-align: center;
+    position: relative;
     margin-bottom: 30px;
+}
+
+.coverImage {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(90deg, #007bff, #00d2ff); /* Placeholder pentru copertă */
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 20px;
+}
+
+.headerContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
     padding-bottom: 20px;
     border-bottom: 1px solid #eee;
 }
 
 .salonTitle {
-    font-size: 32px;
+    font-size: 36px;
     color: #1c2e40;
-    margin-bottom: 10px;
+    margin: 0 0 10px 0;
+    font-weight: 800;
 }
 
 .rating {
@@ -24,91 +40,101 @@
     color: #555;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 5px;
+    background-color: #fff8e1;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-flex;
 }
 
-/* -------------------------------------- */
-/* Content Grid */
-/* -------------------------------------- */
+/* --- Tab Navigation --- */
+.tabsNav {
+    display: flex;
+    gap: 30px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 30px;
+    position: sticky;
+    top: 0;
+    background: #f5f7fa; /* Match body bg if needed */
+    z-index: 10;
+    padding-top: 10px;
+}
 
+.tabButton {
+    background: none;
+    border: none;
+    padding: 15px 5px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tabButton:hover {
+    color: #007bff;
+}
+
+.activeTab {
+    color: #007bff;
+}
+
+.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #007bff;
+    border-radius: 3px 3px 0 0;
+}
+
+/* --- Content Grid --- */
 .contentGrid {
     display: grid;
-    grid-template-columns: 350px 1fr; /* Coloană info mai îngustă, booking/servicii mai lată */
+    grid-template-columns: 1fr 380px; /* Main content flexibil, Booking fix */
     gap: 40px;
+    align-items: start;
 }
 
-/* -------------------------------------- */
-/* Card-uri de Informații (stânga) */
-/* -------------------------------------- */
-
-.infoColumn {
+/* --- Coloana Stânga (Main) --- */
+.mainColumn {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 30px;
 }
 
-.card {
-    background-color: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.card h2 {
-    font-size: 18px;
-    color: #1c2e40;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-.infoDetail {
-    font-size: 15px;
-    color: #555;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.ctaButton {
-    background-color: #25d366; /* WhatsApp Green */
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: background-color 0.2s;
-}
-
-.ctaButton:hover {
-    background-color: #1aa04e;
-}
-
-/* -------------------------------------- */
-/* Servicii și Booking (dreapta) */
-/* -------------------------------------- */
-
-.bookingColumn {
-    /* Aici vor fi elementele de booking */
-}
-
-.servicesContainer h3 {
-    font-size: 20px;
+.sectionTitle {
+    font-size: 22px;
     color: #1c2e40;
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #007bff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Servicii List */
+.servicesContainer {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.serviceCategory {
+    margin-bottom: 30px;
+}
+
+.categoryTitle {
+    font-size: 18px;
+    color: #555;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .serviceItem {
@@ -116,17 +142,108 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px 0;
-    border-bottom: 1px dashed #ddd;
+    border-bottom: 1px dashed #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.serviceItem:hover {
+    background-color: #fafafa;
 }
 
 .serviceName {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     color: #333;
+    display: block;
 }
 
-.priceRange {
-    font-size: 15px;
-    color: #007bff;
+.serviceDuration {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+    display: block;
+}
+
+.priceContainer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.priceTag {
+    font-size: 16px;
     font-weight: 700;
+    color: #1c2e40;
+}
+
+.bookBtnSmall {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Portfolio Grid */
+.portfolioGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.portfolioImage {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    background-color: #ddd;
+}
+
+.portfolioImage:hover {
+    transform: scale(1.03);
+}
+
+/* Info Cards */
+.card {
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    margin-bottom: 20px;
+}
+
+.infoDetail {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.5;
+}
+
+/* --- Coloana Dreapta (Booking Sticky) --- */
+.bookingColumn {
+    position: sticky;
+    top: 90px; /* Să nu intre sub header */
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .contentGrid {
+        grid-template-columns: 1fr;
+    }
+    .bookingColumn {
+        position: static;
+        order: -1; /* Booking-ul primul pe mobil */
+        margin-bottom: 30px;
+    }
+    .tabsNav {
+        overflow-x: auto;
+    }
 }

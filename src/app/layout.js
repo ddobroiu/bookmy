@@ -1,29 +1,31 @@
-// /src/app/layout.js (COD COMPLET FINAL ȘI LOGIC CORECT)
+// /src/app/layout.js (COD COMPLET ACTUALIZAT)
 
 import 'react-big-calendar/lib/css/react-big-calendar.css'; 
-
-// CORECTAT: Ieși din app (..), găsește globals.css
 import '../globals.css'; 
 
-// CORECTAT: Ieși din app (..), intră în components
 import Header from '../components/Header'; 
-// CORECTAT: Ieși din app (..), intră în context
+import Footer from '../components/Footer'; // Importăm Footer-ul
 import { ToastProvider } from '../context/ToastContext'; 
 
 export const metadata = {
-  title: 'BooksApp Clone - Găsește-ți Programarea',
-  description: 'Un clon Next.js al platformei de programări online Booksy.',
+  title: 'BooksApp - Hub-ul Tău de Rezervări',
+  description: 'Găsește și rezervă servicii locale: saloane, restaurante, medici și multe altele.',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ro">
-      <body>
+      {/* Flex layout pentru sticky footer */}
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <ToastProvider>
           <Header />
-          <main>
+          
+          {/* Main ocupă tot spațiul rămas */}
+          <main style={{ flex: 1 }}>
             {children}
           </main>
+          
+          <Footer />
         </ToastProvider>
       </body>
     </html>

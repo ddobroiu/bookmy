@@ -1,17 +1,17 @@
-// /src/app/profil/ProfileClientPage.jsx (COD CORECTAT)
+// /src/app/profil/ProfileClientPage.jsx (COD COMPLET ACTUALIZAT CU CSS MODULES)
 
 'use client';
 
 import React, { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
-// Eliminat importul Link dacă nu este folosit, sau păstrat dacă e necesar
+import styles from './profile.module.css'; // Importăm stilurile noi
 
 export default function ProfileClientPage() {
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ name: '', email: '', phoneNumber: '', role: '' });
   const [loading, setLoading] = useState(true);
-  const { showToast } = useToast(); // Asigură-te că folosești showToast, nu addToast dacă așa e în context
+  const { showToast } = useToast();
 
   React.useEffect(() => {
     async function fetchProfile() {
@@ -35,12 +35,12 @@ export default function ProfileClientPage() {
 
   const handleEditClick = () => {
     setIsEditing(true);
-    setEditedData(userData); // Inițializează datele editate cu cele curente
+    setEditedData(userData);
   };
 
   const handleCancelClick = () => {
     setIsEditing(false);
-    setEditedData(userData); // Revine la datele originale
+    setEditedData(userData);
   };
 
   const handleChange = (e) => {
@@ -85,33 +85,33 @@ export default function ProfileClientPage() {
   };
 
   if (loading) {
-    return <div className="container mx-auto p-4">Se încarcă profilul...</div>;
+    return <div className={styles.loadingContainer}>Se încarcă profilul...</div>;
   }
   if (!userData) {
-    return <div className="container mx-auto p-4 text-red-500">Nu s-au găsit date de profil. Relogați-vă!</div>;
+    return <div className={styles.errorContainer}>Nu s-au găsit date de profil. Te rugăm să te autentifici.</div>;
   }
 
   return (
-    <section className="min-h-screen bg-gray-100 py-10">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="bg-white shadow-xl rounded-lg p-8">
+    <div className={styles.pageContainer}>
+      <div className={styles.contentWrapper}>
+        <div className={styles.profileCard}>
           
-          {/* Header Profil (Avatar + Nume) */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-4xl font-semibold mb-4">
+          {/* Header Profil */}
+          <div className={styles.header}>
+            <div className={styles.avatarCircle}>
               {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">{userData.name || 'Utilizator'}</h1>
-            <p className="text-gray-600">{userData.email}</p>
+            <h1 className={styles.userName}>{userData.name || 'Utilizator'}</h1>
+            <p className={styles.userEmail}>{userData.email}</p>
           </div>
 
           {/* Formular Detalii */}
-          <div className="border-t border-gray-200 pt-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Detalii Profil</h2>
+          <div className={styles.detailsSection}>
+            <h2 className={styles.sectionTitle}>Detalii Profil</h2>
             
             {/* Câmp Nume */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">Nume:</label>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="name">Nume:</label>
               {isEditing ? (
                 <input
                   type="text"
@@ -119,22 +119,22 @@ export default function ProfileClientPage() {
                   name="name"
                   value={editedData.name || ''}
                   onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className={styles.inputField}
                 />
               ) : (
-                <p className="text-gray-900">{userData.name}</p>
+                <p className={styles.valueText}>{userData.name}</p>
               )}
             </div>
 
             {/* Câmp Email (Read-only) */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-              <p className="text-gray-900">{userData.email}</p>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Email:</label>
+              <p className={styles.valueText}>{userData.email}</p>
             </div>
 
             {/* Câmp Telefon */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phoneNumber">Număr de telefon:</label>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="phoneNumber">Număr de telefon:</label>
               {isEditing ? (
                 <input
                   type="text"
@@ -142,47 +142,40 @@ export default function ProfileClientPage() {
                   name="phoneNumber"
                   value={editedData.phoneNumber || ''}
                   onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className={styles.inputField}
                 />
               ) : (
-                <p className="text-gray-900">{userData.phoneNumber || 'N/A'}</p>
+                <p className={styles.valueText}>{userData.phoneNumber || 'N/A'}</p>
               )}
             </div>
 
             {/* Câmp Rol (Read-only) */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Rol:</label>
-              <p className="text-gray-900">{userData.role}</p>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Rol:</label>
+              <p className={styles.valueText}>{userData.role}</p>
             </div>
 
             {/* Butoane Acțiune */}
-            {isEditing ? (
-              <div className="flex space-x-4">
-                <button
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={handleSaveClick}
-                >
-                  Salvează
+            <div className={styles.buttonGroup}>
+              {isEditing ? (
+                <>
+                  <button className={`${styles.btn} ${styles.saveBtn}`} onClick={handleSaveClick}>
+                    Salvează
+                  </button>
+                  <button className={`${styles.btn} ${styles.cancelBtn}`} onClick={handleCancelClick}>
+                    Anulează
+                  </button>
+                </>
+              ) : (
+                <button className={`${styles.btn} ${styles.editBtn}`} onClick={handleEditClick}>
+                  Editează Profilul
                 </button>
-                <button
-                  className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={handleCancelClick}
-                >
-                  Anulează
-                </button>
-              </div>
-            ) : (
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                onClick={handleEditClick}
-              >
-                Editează Profilul
-              </button>
-            )}
+              )}
+            </div>
 
           </div> 
         </div>
       </div>
-    </section>
+    </div>
   );
 }

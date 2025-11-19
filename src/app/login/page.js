@@ -38,7 +38,7 @@ export default function LoginPage() {
         if (userRole === 'partner') {
           router.push('/dashboard');
         } else {
-          router.push('/'); 
+          router.push('/profil'); 
         }
         
       } else {

@@ -1,65 +1,110 @@
-// /src/app/dashboard/services/page.js (COD COMPLET FINAL)
+// /src/app/dashboard/services/page.js (COD COMPLET ACTUALIZAT)
 
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaTrash, FaEdit, FaUser, FaListUl, FaClock, FaTimes, FaEnvelope, FaPhone, FaCheckSquare, FaCheck, FaChair, FaInfoCircle, FaBell } from 'react-icons/fa';
+import { 
+    FaPlus, FaTrash, FaUser, FaListUl, FaClock, FaTimes, 
+    FaEnvelope, FaPhone, FaCheckSquare, FaChair, FaMagic, FaCheck, FaInfoCircle, FaCar, FaUtensils, FaStethoscope
+} from 'react-icons/fa';
 import styles from './services.module.css';
+import { useToast } from '../../../context/ToastContext';
 
-// --- MODAL PROGRAM (Rămâne neschimbat) ---
+// --- 1. CONFIGURARE SUGESTII INTELIGENTE (AI MOCK) ---
+// Acestea apar DOAR partenerului pentru a-l ajuta să-și populeze rapid meniul.
+const SMART_SUGGESTIONS = {
+    'barber': [
+        { name: 'Tuns Clasic', price: 50, duration: 45 },
+        { name: 'Tuns + Barbă', price: 80, duration: 60 },
+        { name: 'Contur Barbă', price: 30, duration: 20 },
+        { name: 'Vopsit Barbă', price: 40, duration: 30 }
+    ],
+    'hair': [
+        { name: 'Tuns Damă', price: 80, duration: 60 },
+        { name: 'Vopsit Rădăcină', price: 150, duration: 90 },
+        { name: 'Coafat Ocazie', price: 200, duration: 60 },
+        { name: 'Tratament Keratină', price: 450, duration: 120, requiresApproval: true }
+    ],
+    'beauty': [
+        { name: 'Manichiură Semipermanentă', price: 100, duration: 90 },
+        { name: 'Pedichiură', price: 120, duration: 60 },
+        { name: 'Pensat', price: 30, duration: 15 },
+        { name: 'Masaj Facial', price: 80, duration: 30 }
+    ],
+    'medical': [
+        { name: 'Consultație Generală', price: 200, duration: 30 },
+        { name: 'Control', price: 100, duration: 20 },
+        { name: 'Ecografie', price: 250, duration: 30 }
+    ],
+    'restaurant': [
+        { name: 'Rezervare Masă (2 Pers)', price: 0, duration: 120, autoAssign: true },
+        { name: 'Rezervare Grup (4-6 Pers)', price: 0, duration: 120, requiresApproval: true },
+        { name: 'Eveniment Privat', price: 0, duration: 240, requiresApproval: true }
+    ],
+    'auto': [
+        { name: 'Spălare Exterior', price: 35, duration: 20, autoAssign: true },
+        { name: 'Spălare Interior + Exterior', price: 60, duration: 45, autoAssign: true },
+        { name: 'Polish Faruri', price: 100, duration: 60 },
+        { name: 'Schimb Ulei', price: 150, duration: 60, requiresApproval: true }
+    ]
+};
+
+// --- 2. MODAL PROGRAM (StaffScheduleModal) ---
 const StaffScheduleModal = ({ staff, onClose, onSave }) => {
     const weekDays = ['luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă', 'duminică'];
     const [schedule, setSchedule] = useState(staff.schedule && Object.keys(staff.schedule).length > 0 ? staff.schedule : weekDays.reduce((acc, day) => ({...acc, [day]: { open: true, start: '09:00', end: '17:00', breaks: [] }}), {}));
-    const handleDayChange = (day, field, value) => { setSchedule(prev => ({...prev, [day]: { ...prev[day], [field]: value }})); };
-    const addBreak = (day) => { setSchedule(prev => ({...prev, [day]: { ...prev[day], breaks: [...(prev[day].breaks || []), { start: '13:00', end: '13:30' }] }})); };
-    const removeBreak = (day, index) => { setSchedule(prev => { const newBreaks = [...prev[day].breaks]; newBreaks.splice(index, 1); return {...prev, [day]: { ...prev[day], breaks: newBreaks }}; }); };
-    const updateBreak = (day, index, field, value) => { setSchedule(prev => { const newBreaks = [...prev[day].breaks]; newBreaks[index] = { ...newBreaks[index], [field]: value }; return {...prev, [day]: { ...prev[day], breaks: newBreaks }}; }); };
     
+    const handleDayChange = (day, field, value) => setSchedule(prev => ({...prev, [day]: { ...prev[day], [field]: value }}));
+    const addBreak = (day) => setSchedule(prev => ({...prev, [day]: { ...prev[day], breaks: [...(prev[day].breaks || []), { start: '13:00', end: '13:30' }] }}));
+    const removeBreak = (day, index) => setSchedule(prev => { const b = [...prev[day].breaks]; b.splice(index, 1); return {...prev, [day]: { ...prev[day], breaks: b }}; });
+    const updateBreak = (day, index, field, value) => setSchedule(prev => { const b = [...prev[day].breaks]; b[index][field] = value; return {...prev, [day]: { ...prev[day], breaks: b }}; });
+
     return (
         <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000}}>
             <div style={{background:'white', padding:'30px', borderRadius:'12px', width:'700px', maxHeight:'90vh', overflowY:'auto', boxShadow:'0 5px 20px rgba(0,0,0,0.2)'}}>
                 <div style={{display:'flex', justifyContent:'space-between', marginBottom:'20px'}}>
-                    <h2 style={{margin:0, color:'#1c2e40'}}>Program: {staff.name}</h2>
+                    <h2 style={{margin:0, color:'#1c2e40'}}>Orar Calendar: {staff.name}</h2>
                     <button onClick={onClose} style={{background:'none', border:'none', cursor:'pointer', fontSize:'20px'}}><FaTimes /></button>
                 </div>
-                <div style={{marginBottom:'20px', padding:'10px', background:'#e6f0ff', borderRadius:'6px', fontSize:'13px'}}>Setează intervalul orar. Pauzele blochează calendarul.</div>
+                <div style={{marginBottom:'20px', padding:'10px', background:'#e6f0ff', borderRadius:'6px', fontSize:'13px', color:'#004085'}}>
+                    Definește intervalul orar și pauzele pentru această resursă. Calendarul se va bloca automat în timpul pauzelor.
+                </div>
                 {weekDays.map(day => (
-                    <div key={day} style={{borderBottom:'1px solid #eee', padding:'15px 0'}}>
-                        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px'}}>
-                            <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-                                <input type="checkbox" checked={schedule[day]?.open} onChange={(e) => handleDayChange(day, 'open', e.target.checked)} style={{width:'18px', height:'18px'}} />
-                                <strong style={{textTransform:'capitalize', width:'80px'}}>{day}</strong>
-                            </div>
-                            {schedule[day]?.open ? (
-                                <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
-                                    <input type="time" value={schedule[day].start} onChange={(e) => handleDayChange(day, 'start', e.target.value)} style={{padding:'5px', borderRadius:'4px', border:'1px solid #ccc'}}/>
-                                    <span>-</span>
-                                    <input type="time" value={schedule[day].end} onChange={(e) => handleDayChange(day, 'end', e.target.value)} style={{padding:'5px', borderRadius:'4px', border:'1px solid #ccc'}}/>
-                                    <button onClick={() => addBreak(day)} style={{fontSize:'12px', color:'#007bff', background:'none', border:'none', cursor:'pointer', textDecoration:'underline'}}>+ Pauză</button>
-                                </div>
-                            ) : <span style={{color:'#999', fontStyle:'italic'}}>Liber</span>}
+                    <div key={day} style={{borderBottom:'1px solid #eee', padding:'10px 0', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                        <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
+                            <input type="checkbox" checked={schedule[day]?.open} onChange={e => handleDayChange(day, 'open', e.target.checked)} style={{width:'18px', height:'18px'}} />
+                            <strong style={{textTransform:'capitalize', width:'80px'}}>{day}</strong>
                         </div>
-                        {schedule[day]?.open && schedule[day].breaks?.map((brk, idx) => (
-                            <div key={idx} style={{display:'flex', gap:'10px', alignItems:'center', marginLeft:'110px', marginTop:'5px'}}>
-                                <span style={{fontSize:'12px', color:'#666'}}>Pauză:</span>
-                                <input type="time" value={brk.start} onChange={(e) => updateBreak(day, idx, 'start', e.target.value)} style={{padding:'3px', fontSize:'12px', border:'1px solid #ddd'}}/>
-                                <span>-</span>
-                                <input type="time" value={brk.end} onChange={(e) => updateBreak(day, idx, 'end', e.target.value)} style={{padding:'3px', fontSize:'12px', border:'1px solid #ddd'}}/>
-                                <FaTrash onClick={() => removeBreak(day, idx)} style={{color:'#e64c3c', cursor:'pointer', fontSize:'12px'}} />
+                        {schedule[day]?.open ? (
+                            <div style={{display:'flex', gap:'5px', alignItems:'center'}}>
+                                <input type="time" value={schedule[day].start} onChange={e => handleDayChange(day, 'start', e.target.value)} style={{padding:'5px', border:'1px solid #ddd', borderRadius:'4px'}}/> - 
+                                <input type="time" value={schedule[day].end} onChange={e => handleDayChange(day, 'end', e.target.value)} style={{padding:'5px', border:'1px solid #ddd', borderRadius:'4px'}}/>
+                                <button onClick={() => addBreak(day)} style={{marginLeft:'10px', color:'#007bff', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:'bold'}}>+ Pauză</button>
                             </div>
-                        ))}
+                        ) : <span style={{color:'#999', fontStyle:'italic'}}>Închis</span>}
+                        
+                        {/* Randare Pauze */}
+                        {schedule[day]?.open && schedule[day].breaks?.length > 0 && (
+                            <div style={{display:'flex', flexDirection:'column', gap:'5px', marginLeft:'15px'}}>
+                                {schedule[day].breaks.map((brk, idx) => (
+                                    <div key={idx} style={{display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', background:'#f9f9f9', padding:'2px 5px', borderRadius:'4px'}}>
+                                        <span>P: {brk.start}-{brk.end}</span>
+                                        <FaTimes onClick={() => removeBreak(day, idx)} style={{color:'red', cursor:'pointer'}} size={10}/>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
-                <div style={{marginTop:'20px', display:'flex', justifyContent:'flex-end', gap:'10px'}}>
-                    <button onClick={onClose} style={{padding:'10px 20px', background:'#f0f0f0', border:'none', borderRadius:'6px', cursor:'pointer'}}>Anulează</button>
-                    <button onClick={() => onSave(staff.id, schedule)} style={{padding:'10px 20px', background:'#007bff', color:'white', border:'none', borderRadius:'6px', cursor:'pointer'}}>Salvează</button>
+                <div style={{marginTop:'20px', textAlign:'right'}}>
+                    <button onClick={() => onSave(staff.id, schedule)} style={{padding:'10px 20px', background:'#007bff', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold'}}>Salvează Orarul</button>
                 </div>
             </div>
         </div>
     );
 };
 
-// --- COMPONENTĂ FORMULAR ADĂUGARE (CU SERVICII & CONTACT) ---
+// --- 3. COMPONENTĂ ADĂUGARE (FLEXIBILĂ) ---
 const AddForm = ({ onAdd, title, fields, isStaffForm, availableServices }) => {
     const initialFormData = fields.reduce((acc, field) => ({ 
         ...acc, 
@@ -68,16 +113,16 @@ const AddForm = ({ onAdd, title, fields, isStaffForm, availableServices }) => {
     
     if (isStaffForm) {
         initialFormData.useSalonContact = true;
-        initialFormData.serviceIds = []; // Array pentru servicii
+        initialFormData.serviceIds = [];
     }
 
     const [formData, setFormData] = useState(initialFormData);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Validare Contact
-        if (isStaffForm && !formData.useSalonContact && !formData.email && !formData.phone) {
-            alert("Trebuie să introduci un Email sau Telefon dacă nu folosești contactul recepției.");
+        // Validare Contact doar dacă e om și nu folosește recepția
+        if (isStaffForm && formData.isHuman && !formData.useSalonContact && !formData.email && !formData.phone) {
+            alert("Te rugăm să introduci un Email sau Telefon de contact pentru acest angajat.");
             return;
         }
         onAdd(formData);
@@ -91,80 +136,97 @@ const AddForm = ({ onAdd, title, fields, isStaffForm, availableServices }) => {
 
     const toggleService = (id) => {
         const current = formData.serviceIds || [];
-        const updated = current.includes(id) ? current.filter(s => s !== id) : [...current, id];
-        setFormData({ ...formData, serviceIds: updated });
+        setFormData({ ...formData, serviceIds: current.includes(id) ? current.filter(s => s !== id) : [...current, id] });
     };
-
-    const inputFields = fields.filter(f => f.type !== 'checkbox');
-    const checkboxFields = fields.filter(f => f.type === 'checkbox');
 
     return (
         <div className={styles.addFormContainer}>
             <h3 className={styles.formTitle}>{title}</h3>
             <form onSubmit={handleSubmit}>
-                {/* Câmpuri Text */}
                 <div className={styles.formRow}>
-                    {inputFields.map(field => {
-                        if (isStaffForm && (field.name === 'email' || field.name === 'phone') && formData.useSalonContact) return null;
-                        if (isStaffForm && field.name === 'assignedPerson' && formData.isHuman) return null;
-                        return (
+                    {fields.map(field => {
+                         // Ascundem câmpuri condiționale
+                         if (isStaffForm && (field.name === 'email' || field.name === 'phone') && formData.useSalonContact) return null;
+                         if (isStaffForm && field.name === 'assignedPerson' && formData.isHuman) return null;
+                         if (field.type === 'checkbox') return null; // Randăm separat
+
+                         return (
                             <div key={field.name} className={styles.fieldGroup} style={{ flex: field.flex || 1 }}>
                                 <label className={styles.label}>{field.label}</label>
                                 <input
-                                    type={field.type || 'text'}
-                                    name={field.name}
-                                    value={formData[field.name]}
-                                    onChange={handleChange}
-                                    required={field.required !== false}
-                                    className={styles.input}
-                                    placeholder={field.placeholder || ''}
+                                    type={field.type || 'text'} name={field.name} value={formData[field.name]}
+                                    onChange={handleChange} required={field.required !== false}
+                                    className={styles.input} placeholder={field.placeholder || ''}
                                 />
                             </div>
-                        );
+                         );
                     })}
                 </div>
-                
-                {/* Setări Checkbox */}
+
                 <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px'}}>
-                    {checkboxFields.map(field => (
-                        <div key={field.name} style={{background: formData[field.name] ? '#fff3cd' : '#f8f9fa', border: formData[field.name] ? '1px solid #ffeeba' : '1px solid #eee', padding: '15px', borderRadius: '8px'}}>
+                    {fields.filter(f => f.type === 'checkbox' && f.name !== 'isHuman').map(field => (
+                        <div key={field.name} style={{background: formData[field.name] ? '#fff3cd' : '#f8f9fa', padding: '10px', borderRadius: '6px', border: '1px solid #eee'}}>
                             <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', color: '#333'}}>
-                                <input type="checkbox" name={field.name} checked={formData[field.name]} onChange={handleChange} style={{width:'18px', height:'18px'}} />
+                                <input type="checkbox" name={field.name} checked={formData[field.name]} onChange={handleChange} style={{width:'16px', height:'16px'}} />
                                 {field.label}
                             </label>
-                            <div style={{marginLeft:'28px', fontSize:'12px', color:'#666', marginTop:'5px'}}>{field.description}</div>
+                            {field.description && <p style={{marginLeft:'26px', fontSize:'12px', color:'#666', marginTop:'4px'}}>{field.description}</p>}
                         </div>
                     ))}
 
-                    {/* Toggle Staff Contact */}
+                    {/* Setări Calendar */}
                     {isStaffForm && (
-                        <div style={{background: formData.useSalonContact ? '#e6f4ea' : '#fff', border: formData.useSalonContact ? '1px solid #1aa858' : '1px dashed #ccc', padding: '15px', borderRadius: '8px'}}>
-                            <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', color: formData.useSalonContact ? '#1aa858' : '#333'}}>
-                                <input type="checkbox" name="useSalonContact" checked={formData.useSalonContact} onChange={handleChange} style={{width: '18px', height: '18px'}} />
-                                Folosește contactul Recepției
-                            </label>
-                            <div style={{marginLeft: '28px', marginTop: '5px', fontSize: '12px', color: '#555'}}>
-                                {formData.useSalonContact ? 'Notificările merg la recepție.' : 'Introdu contactul personal al angajatului.'}
+                        <>
+                            {/* Tip Resursă */}
+                            <div style={{background: 'white', padding: '15px', border: '1px solid #ddd', borderRadius: '8px'}}>
+                                <label className={styles.label} style={{marginBottom:'10px'}}>Tipul Resursei</label>
+                                <div style={{display:'flex', gap:'20px'}}>
+                                    <label style={{display:'flex', alignItems:'center', gap:'5px', cursor:'pointer'}}>
+                                        <input type="radio" name="isHuman" checked={formData.isHuman === true} onChange={() => setFormData({...formData, isHuman: true})} />
+                                        <FaUser /> Angajat (Om)
+                                    </label>
+                                    <label style={{display:'flex', alignItems:'center', gap:'5px', cursor:'pointer'}}>
+                                        <input type="radio" name="isHuman" checked={formData.isHuman === false} onChange={() => setFormData({...formData, isHuman: false})} />
+                                        <FaChair /> Obiect (Masă/Boxă/Cameră)
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                    )}
 
-                    {/* Selecție Servicii */}
-                    {isStaffForm && availableServices && (
-                        <div style={{padding: '15px', border: '1px solid #ddd', borderRadius: '8px'}}>
-                            <label style={{fontWeight: 'bold', display: 'block', marginBottom: '10px'}}>Ce servicii prestează acest calendar?</label>
-                            <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}>
-                                {availableServices.map(svc => (
-                                    <div key={svc.id} onClick={() => toggleService(svc.id)} style={{
-                                        padding: '8px 12px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px',
-                                        background: formData.serviceIds?.includes(svc.id) ? '#007bff' : '#eee',
-                                        color: formData.serviceIds?.includes(svc.id) ? 'white' : '#333'
-                                    }}>
-                                        {svc.name} {formData.serviceIds?.includes(svc.id) && <FaCheck style={{marginLeft: '5px'}}/>}
+                            {/* Contact */}
+                            {formData.isHuman && (
+                                <div style={{background: formData.useSalonContact ? '#e6f4ea' : '#fff', border: formData.useSalonContact ? '1px solid #1aa858' : '1px dashed #ccc', padding: '15px', borderRadius: '8px'}}>
+                                    <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', color: formData.useSalonContact ? '#1aa858' : '#333'}}>
+                                        <input type="checkbox" name="useSalonContact" checked={formData.useSalonContact} onChange={handleChange} style={{width: '16px', height: '16px'}} />
+                                        Folosește contactul Recepției pentru notificări
+                                    </label>
+                                    <div style={{marginLeft: '26px', marginTop: '5px', fontSize: '12px', color: '#555'}}>
+                                        {formData.useSalonContact ? 'Notificările merg la adresa centrală.' : 'Vei introduce datele personale ale angajatului.'}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                </div>
+                            )}
+
+                            {/* Selecție Servicii */}
+                            {availableServices && availableServices.length > 0 && (
+                                <div style={{padding: '15px', border: '1px solid #007bff', borderRadius: '8px', background: '#f0f9ff'}}>
+                                    <label style={{fontWeight: 'bold', display: 'block', marginBottom: '10px', color: '#007bff'}}>
+                                        <FaListUl style={{marginRight: '5px'}}/> Ce servicii oferă acest calendar?
+                                    </label>
+                                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}>
+                                        {availableServices.map(svc => (
+                                            <div key={svc.id} onClick={() => toggleService(svc.id)} style={{
+                                                padding: '8px 12px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px', transition: 'all 0.2s',
+                                                background: formData.serviceIds?.includes(svc.id) ? '#007bff' : 'white',
+                                                color: formData.serviceIds?.includes(svc.id) ? 'white' : '#333',
+                                                border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+                                            }}>
+                                                {svc.name} {formData.serviceIds?.includes(svc.id) && <FaCheck style={{marginLeft: '5px'}}/>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {formData.serviceIds.length === 0 && <p style={{fontSize:'12px', color:'red', marginTop:'5px'}}>* Selectează cel puțin un serviciu.</p>}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -181,14 +243,27 @@ export default function DashboardServicesPage() {
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingStaff, setEditingStaff] = useState(null);
+    const [salonCategory, setSalonCategory] = useState(''); 
+    const { showToast } = useToast();
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const servicesRes = await fetch('/api/dashboard/data?type=services');
             const staffRes = await fetch('/api/dashboard/data?type=staff');
+            const salonRes = await fetch('/api/partner/salon');
+            
             if (servicesRes.ok) setServices(await servicesRes.json());
             if (staffRes.ok) setStaff(await staffRes.json());
+            if (salonRes.ok) {
+                const sData = await salonRes.json();
+                const cat = sData.category?.toLowerCase() || '';
+                if (cat.includes('barber')) setSalonCategory('barber');
+                else if (cat.includes('medical')) setSalonCategory('medical');
+                else if (cat.includes('restaurant')) setSalonCategory('restaurant');
+                else if (cat.includes('auto')) setSalonCategory('auto');
+                else setSalonCategory('beauty');
+            }
         } catch (error) { console.error(error); } finally { setLoading(false); }
     }, []);
 
@@ -202,12 +277,18 @@ export default function DashboardServicesPage() {
                 body: JSON.stringify({ type, data }),
             });
             
-            if (response.ok) fetchData();
-            else {
+            if (response.ok) {
+                showToast('Adăugat cu succes!', 'success');
+                fetchData();
+            } else {
                 const err = await response.json();
-                alert(err.message || "Eroare");
+                showToast(err.message || "Eroare", 'error');
             }
         } catch (error) { console.error(error); }
+    };
+
+    const handleAddSuggestion = async (suggestion) => {
+        await handleAdd(suggestion, 'service');
     };
 
     const handleDelete = async (id, type) => {
@@ -225,23 +306,23 @@ export default function DashboardServicesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type: 'staff', id, data: { schedule } })
             });
-            if (response.ok) { alert('Program salvat!'); setEditingStaff(null); fetchData(); }
-        } catch (e) { alert('Eroare'); }
+            if (response.ok) { showToast('Orar salvat!', 'success'); setEditingStaff(null); fetchData(); }
+        } catch (e) { showToast('Eroare', 'error'); }
     };
 
+    // --- CONFIGURARE CÂMPURI ---
     const serviceFields = [
-        { name: 'name', label: 'Nume Serviciu', flex: 2, placeholder: 'ex: Tuns' },
-        { name: 'price', label: 'Preț (RON)', type: 'number', flex: 1, placeholder: '50' },
-        { name: 'duration', label: 'Min', type: 'number', flex: 1, placeholder: '30' },
-        { name: 'requiresApproval', label: 'Aprobare Manuală?', type: 'checkbox', description: 'Clientul va aștepta confirmarea.', required: false },
-        { name: 'autoAssign', label: 'Alocare Automată?', type: 'checkbox', description: 'Sistemul alege prima resursă liberă.', required: false },
+        { name: 'name', label: 'Denumire Serviciu', flex: 2, placeholder: 'ex: Tuns' },
+        { name: 'price', label: 'Preț (RON)', type: 'number', flex: 1 },
+        { name: 'duration', label: 'Durată (min)', type: 'number', flex: 1 },
+        { name: 'requiresApproval', label: 'Aprobare Manuală?', type: 'checkbox', description: 'Clientul așteaptă confirmarea ta.' },
+        { name: 'autoAssign', label: 'Alocare Automată?', type: 'checkbox', description: 'Sistemul alege prima resursă liberă (util pt Mese/Boxe).' },
     ];
 
     const staffFields = [
-        { name: 'name', label: 'Nume (Om sau Resursă)', flex: 2, placeholder: 'ex: Ion sau Masa 1' },
-        { name: 'role', label: 'Rol', flex: 1, placeholder: 'ex: Stilist' },
-        { name: 'isHuman', label: 'Este o persoană?', type: 'checkbox', defaultValue: true, description: 'Debifează dacă e un obiect (masă/boxă).' },
-        { name: 'assignedPerson', label: 'Responsabil', flex: 2, placeholder: 'ex: Ion', required: false },
+        { name: 'name', label: 'Nume Calendar (Resursă)', flex: 2, placeholder: 'ex: Ion sau Masa 1' },
+        { name: 'role', label: 'Etichetă', flex: 1, placeholder: 'ex: Stilist' },
+        { name: 'assignedPerson', label: 'Responsabil (Opțional)', flex: 2, placeholder: 'Cine răspunde de acest obiect?', required: false },
         { name: 'email', label: 'Email', flex: 2, required: false },
         { name: 'phone', label: 'Telefon', flex: 1, required: false },
     ];
@@ -250,45 +331,108 @@ export default function DashboardServicesPage() {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.headerTitle}>Gestionare Servicii și Resurse</h1>
+            <h1 className={styles.headerTitle}>Configurare Resurse & Servicii</h1>
+            <p className={styles.headerDescription}>Pasul 1: Definește ce oferi. Pasul 2: Definește cine/ce prestează (Calendarele).</p>
 
+            {/* 1. MENIU SERVICII */}
             <div className={styles.sectionContainer}>
-                <h2 className={styles.sectionHeader}><FaListUl /> Servicii</h2>
-                <AddForm onAdd={(data) => handleAdd(data, 'service')} title="Adaugă Serviciu" fields={serviceFields} />
-                {services.map(s => (
-                    <div key={s.id} className={styles.listItem}>
-                        <div>
-                            <strong>{s.name}</strong> <span className={styles.itemMetaSecondary}>({s.duration} min, {s.price} RON)</span>
-                            {s.requiresApproval && <span style={{fontSize:'10px', color:'#e67e22', fontWeight:'bold', marginLeft:'5px'}}>• Necesită Aprobare</span>}
+                <h2 className={styles.sectionHeader}><FaListUl /> Meniu Servicii</h2>
+                
+                {/* Smart Suggestions - Apar doar dacă lista e goală sau mică */}
+                {services.length < 2 && SMART_SUGGESTIONS[salonCategory] && (
+                    <div style={{marginBottom: '20px', padding: '15px', background: '#fff8e1', borderRadius: '8px', border: '1px dashed #ffc107'}}>
+                        <h4 style={{margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#856404'}}>
+                            <FaMagic /> Recomandări pentru afacerea ta ({salonCategory})
+                        </h4>
+                        <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                            {SMART_SUGGESTIONS[salonCategory].map((sug, i) => (
+                                <button key={i} onClick={() => handleAddSuggestion(sug)} style={{padding: '8px 12px', background: 'white', border: '1px solid #ffc107', borderRadius: '20px', cursor: 'pointer', color: '#856404', fontSize: '13px', fontWeight: '600'}}>
+                                    + {sug.name}
+                                </button>
+                            ))}
                         </div>
-                        <button onClick={() => handleDelete(s.id, 'service')} className={`${styles.actionButton} ${styles.deleteBtn}`}><FaTrash /></button>
                     </div>
-                ))}
+                )}
+
+                <AddForm onAdd={(data) => handleAdd(data, 'service')} title="Adaugă Serviciu" fields={serviceFields} />
+                
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px'}}>
+                    {services.map(s => (
+                        <div key={s.id} className={styles.listItem} style={{flexDirection: 'column', alignItems: 'flex-start', gap: '10px'}}>
+                            <div style={{width: '100%', display: 'flex', justifyContent: 'space-between'}}>
+                                <div>
+                                    <strong style={{fontSize: '16px'}}>{s.name}</strong>
+                                    <div style={{fontSize: '13px', color: '#666'}}>
+                                        {s.duration} min • <span style={{color: '#1aa858', fontWeight: 'bold'}}>{s.price} RON</span>
+                                    </div>
+                                </div>
+                                <button onClick={() => handleDelete(s.id, 'service')} className={`${styles.actionButton} ${styles.deleteBtn}`}><FaTrash /></button>
+                            </div>
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                {s.requiresApproval && <span style={{fontSize:'10px', background:'#fff3cd', padding:'2px 6px', borderRadius:'4px', color:'#856404'}}>Aprobare Manuală</span>}
+                                {s.autoAssign && <span style={{fontSize:'10px', background:'#d1ecf1', padding:'2px 6px', borderRadius:'4px', color:'#0c5460'}}>Alocare Automată</span>}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
+            {/* 2. CALENDARE */}
             <div className={styles.sectionContainer}>
-                <h2 className={styles.sectionHeader}><FaUser /> Echipă / Calendare</h2>
-                <AddForm onAdd={(data) => handleAdd(data, 'staff')} title="Adaugă Calendar" fields={staffFields} isStaffForm={true} availableServices={services} />
+                <h2 className={styles.sectionHeader}><FaUser /> Calendare (Resurse Active)</h2>
+                <div style={{marginBottom: '20px', fontSize: '14px', color: '#555'}}>
+                    Fiecare calendar reprezintă o capacitate de rezervare (ex: un angajat sau o masă).
+                    <br/><strong>Important:</strong> Asociază servicii fiecărui calendar.
+                </div>
+
+                <AddForm 
+                    onAdd={(data) => handleAdd(data, 'staff')} 
+                    title="Adaugă Calendar Nou" 
+                    fields={staffFields} 
+                    isStaffForm={true} 
+                    availableServices={services} 
+                />
                 
-                {staff.map(m => (
-                    <div key={m.id} className={styles.listItem}>
-                        <div>
-                            <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                                {m.isHuman ? <FaUser color="#007bff"/> : <FaChair color="#666"/>}
-                                <strong>{m.name}</strong>
+                <div style={{display: 'grid', gap: '15px'}}>
+                    {staff.map(m => (
+                        <div key={m.id} className={styles.listItem} style={{background: '#fff', borderLeft: '4px solid #007bff'}}>
+                            <div style={{flex: 1}}>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px'}}>
+                                    {m.isHuman ? <FaUser size={18} color="#007bff"/> : <FaChair size={18} color="#666"/>}
+                                    <strong style={{fontSize: '18px'}}>{m.name}</strong>
+                                    <span style={{fontSize: '12px', background: '#eee', padding: '2px 8px', borderRadius: '10px'}}>{m.role}</span>
+                                    {!m.isHuman && m.assignedPerson && <span style={{fontSize: '12px', color:'#888'}}>(Resp: {m.assignedPerson})</span>}
+                                </div>
+                                
+                                <div style={{fontSize: '13px', color: '#555', marginBottom: '5px'}}>
+                                    <strong>Servicii Oferite:</strong> {m.services && m.services.length > 0 
+                                        ? m.services.map(s => s.name).join(', ') 
+                                        : <span style={{color: 'red', fontWeight:'bold'}}>Niciun serviciu alocat! (Inactiv)</span>}
+                                </div>
+
+                                <div style={{fontSize: '12px', color: '#888', display: 'flex', gap: '15px'}}>
+                                    {m.useSalonContact ? (
+                                        <span style={{color: '#1aa858'}}><FaCheckCircle style={{verticalAlign:'middle'}}/> Notificări la Recepție</span>
+                                    ) : (
+                                        <>
+                                            {m.email && <span><FaEnvelope/> {m.email}</span>}
+                                            {m.phone && <span><FaPhone/> {m.phone}</span>}
+                                        </>
+                                    )}
+                                </div>
                             </div>
-                            <div style={{fontSize:'12px', color:'#888', marginTop:'4px'}}>
-                                {m.services?.length > 0 ? `Servicii: ${m.services.map(s => s.name).join(', ')}` : <span style={{color:'orange'}}>Niciun serviciu alocat</span>}
+
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+                                <button onClick={() => setEditingStaff(m)} className={styles.actionButton} style={{background: '#e6f0ff', color: '#007bff', fontSize: '14px', width: '100%', textAlign: 'center'}}>
+                                    <FaClock /> Orar
+                                </button>
+                                <button onClick={() => handleDelete(m.id, 'staff')} className={styles.actionButton} style={{color: '#e64c3c', fontSize: '14px', width: '100%', textAlign: 'center'}}>
+                                    <FaTrash /> Șterge
+                                </button>
                             </div>
                         </div>
-                        <div style={{display:'flex', gap:'10px'}}>
-                            <button onClick={() => setEditingStaff(m)} className={styles.actionButton} style={{color:'#007bff', border:'1px solid #007bff', borderRadius:'4px', padding:'5px 10px', display:'flex', alignItems:'center', gap:'5px'}}>
-                                <FaClock /> Program
-                            </button>
-                            <button onClick={() => handleDelete(m.id, 'staff')} className={styles.actionButton} style={{color:'#e64c3c'}}><FaTrash /></button>
-                        </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
             {editingStaff && <StaffScheduleModal staff={editingStaff} onClose={() => setEditingStaff(null)} onSave={saveStaffSchedule} />}

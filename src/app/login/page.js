@@ -1,4 +1,4 @@
-// /src/app/login/page.js (COD COMPLET ACTUALIZAT CU "OCHI" PENTRU PAROLĂ)
+// /src/app/login/page.js (COD COMPLET - REDIRECȚIONARE CLIENT + OCHI PAROLĂ)
 
 'use client';
 
@@ -7,13 +7,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link'; 
 import { useToast } from '../../context/ToastContext'; 
 import styles from '@/components/AuthForm.module.css'; 
-// Importăm iconițele pentru ochi
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // State pentru vizibilitatea parolei
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -33,16 +31,22 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        const userRole = data.user.role;
+        const userRole = data.user.role; // 'client' sau 'partner' (lowercase din API)
         
         showToast(`Logare reușită! Bine ai venit, ${data.user.name || userRole}.`, 'success'); 
 
+        // Salvăm rolul pentru AuthStatus (componenta Header)
         localStorage.setItem('userRole', userRole);
 
+        // Forțăm o reîmprospătare a router-ului pentru a actualiza cookie-urile/sesiunea în middleware
+        router.refresh();
+
+        // LOGICA DE REDIRECȚIONARE ACTUALIZATĂ
         if (userRole === 'partner') {
           router.push('/dashboard');
         } else {
-          router.push('/'); 
+          // ACUM TE TRIMITE DIRECT LA PROFIL
+          router.push('/profil'); 
         }
         
       } else {
@@ -80,18 +84,15 @@ export default function LoginPage() {
           <label htmlFor="password">Parolă</label>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <input
-              // Schimbăm tipul din 'password' în 'text' în funcție de state
               type={showPassword ? 'text' : 'password'}
               id="password"
               className={styles.inputField}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              // Adăugăm padding la dreapta ca să nu se suprapună textul peste iconiță
               style={{ paddingRight: '40px' }} 
             />
             
-            {/* Butonul "Ochi" */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -106,9 +107,9 @@ export default function LoginPage() {
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0',
-                top: '15px' // Ajustat pentru a se alinia cu input-ul care are margin-top: 5px în CSS
+                top: '15px'
               }}
-              tabIndex="-1" // Să nu fie selectat când dai Tab prin formular
+              tabIndex="-1"
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
@@ -120,7 +121,6 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Link către înregistrare */}
       <div className={styles.authLink}>
         Nu ai un cont? <Link href="/inregistrare-client">Înregistrează-te aici</Link>
       </div>

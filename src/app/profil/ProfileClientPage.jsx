@@ -90,9 +90,19 @@ export default function ProfileClientPage() {
     return <div className="container mx-auto p-4 text-red-500">Nu s-au găsit date de profil. Relogați-vă!</div>;
   }
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Profilul Meu</h1>
-      <div className="bg-white shadow-md rounded-lg p-6">
+    <section className="min-h-screen bg-gray-100 py-10">
+      <div className="container mx-auto px-4 max-w-3xl">
+        <div className="bg-white shadow-xl rounded-lg p-8">
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-4xl font-semibold mb-4">
+              {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">{userData.name || 'Utilizator'}</h1>
+            <p className="text-gray-600">{userData.email}</p>
+          </div>
+
+          <div className="border-t border-gray-200 pt-8">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Detalii Profil</h2>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">Nume:</label>
           {isEditing ? (

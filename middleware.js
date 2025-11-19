@@ -1,46 +1,59 @@
-// middleware.js (Actualizat pentru a proteja profilul)
+// middleware.js (COD COMPLET ACTUALIZAT)
+
 import { NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { sessionOptions } from './src/lib/session';
 
-const PARTNER_PROTECTED_ROUTES = ['/dashboard'];
 const ONBOARDING_ROUTE = '/dashboard/onboarding';
-// Adăugăm rutele de client
-const CLIENT_PROTECTED_ROUTES = ['/profil']; 
 
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
-  const session = await getIronSession(request, NextResponse.next(), sessionOptions);
+  const response = NextResponse.next();
+  const session = await getIronSession(request, response, sessionOptions);
   
   const userRole = session.role;
   const isLoggedIn = session.isLoggedIn;
 
-  // 1. Protecție Generală (Trebuie să fii logat pentru Dashboard sau Profil)
+  // 1. Protecție Rute Admin (NOU)
+  if (pathname.startsWith('/admin')) {
+      if (!isLoggedIn || userRole !== 'ADMIN') {
+          // Dacă nu e admin, îl trimitem la login sau home
+          return NextResponse.redirect(new URL('/login', request.url));
+      }
+  }
+
+  // 2. Protecție Generală (Dashboard / Profil)
   if ((pathname.startsWith('/dashboard') || pathname.startsWith('/profil')) && !isLoggedIn) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Protecție Partener
-  if (pathname.startsWith('/dashboard') && userRole !== 'PARTENER') {
-      return NextResponse.redirect(new URL('/', request.url)); // Sau o pagină de eroare 403
+  // 3. Protecție Partener (Nu lăsăm clienții în dashboard)
+  if (pathname.startsWith('/dashboard') && userRole !== 'PARTNER' && userRole !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/profil', request.url));
   }
 
-  // 3. Logica Onboarding Partener (neschimbată)
+  // 4. Logica Onboarding Partener
   const isOnboardingRoute = pathname.startsWith(ONBOARDING_ROUTE);
-  if (userRole === 'PARTENER' && !session.salonSetup && !isOnboardingRoute && pathname.startsWith('/dashboard')) {
+  if (userRole === 'PARTNER' && !session.salonSetup && !isOnboardingRoute && pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL(ONBOARDING_ROUTE, request.url));
   }
   
-  if (userRole === 'PARTENER' && session.salonSetup && isOnboardingRoute) {
+  if (userRole === 'PARTNER' && session.salonSetup && isOnboardingRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  // Adăugăm /profil/:path* la matcher
-  matcher: ['/dashboard/:path*', '/login', '/profil/:path*', '/inregistrare-afacere', '/inregistrare-client'], 
+  matcher: [
+      '/dashboard/:path*', 
+      '/login', 
+      '/profil/:path*', 
+      '/admin/:path*', // Adăugăm admin la matcher
+      '/inregistrare-afacere', 
+      '/inregistrare-client'
+  ], 
 };

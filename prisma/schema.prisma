@@ -1,133 +1,23 @@
-// /prisma/schema.prisma
-
-// Configurează tipul bazei de date (Postgres/MySQL)
-datasource db {
-  provider = "postgresql" // Schimbă la "mysql" dacă folosești MySQL
-  url      = "postgresql://postgres:sWFqVGoumppxMbFOdEidtlWyRzragPHQ@shortline.proxy.rlwy.net:13083/railway"
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-// ------------------------------------
-// Modele de Producție (pentru Railway)
-// ------------------------------------
+// ... restul codului de configurare ...
 
 // 1. Modelul Utilizator (Client și Partener)
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  name         String? // Numele utilizatorului (opțional pentru migrare)
-  phoneNumber  String? // Numărul de telefon al utilizatorului
-  passwordHash String // Parolă criptată
-  role         Role      @default(CLIENT) // CLIENT sau PARTENER
-  salonId      String? // ID-ul salonului, dacă utilizatorul este Partener
+  name         String?
+  phoneNumber  String?
+  passwordHash String
+  role         Role      @default(CLIENT)
+  salonId      String?
   salonSetup   Boolean   @default(false)
   
-  appointments Appointment[] // Programările făcute de acest client
-  reviews      Review[] // Recenziile lăsate de acest utilizator
+  // ADĂUGAT AICI:
+  avatarUrl    String?   @db.Text // Folosim @db.Text pentru a permite șiruri Base64 lungi
+
+  appointments Appointment[]
+  reviews      Review[]
 
   @@map("users")
 }
 
-enum Role {
-  CLIENT
-  PARTENER
-}
-
-// 2. Modelul Salon (Afacere) - A fost eliminată ambiguitatea
-model Salon {
-  id           String @id @unique
-  name         String
-  slug         String @unique // Folosit pentru URL-ul public
-  address      String
-  category     String
-  scheduleJson String @db.Text // Orarul de lucru (salvat ca JSON string)
-  
-  // NOU: Relația bidirecțională cu Staff (Lista de angajați)
-  staff        Staff[] 
-  
-  // Relația cu Programările este numită explicit
-  receivedAppointments Appointment[] @relation(name: "SalonAppointments") 
-  reviews              Review[] // Recenziile primite de acest salon
-
-  // Câmpuri pentru date agregate despre recenzii
-  averageRating        Float     @default(0)
-  reviewCount          Int       @default(0)
-
-  @@map("salons")
-}
-
-// 3. Modelul Staff/Angajat - Corectat pentru relația bidirecțională
-model Staff {
-  id         String @id @default(uuid())
-  
-  // Câmpul Foreign Key (FK)
-  salonId    String 
-  
-  name       String
-  role       String
-  
-  // RELAȚIA INVERSĂ: Angajatul aparține unui Salon
-  salon      Salon @relation(fields: [salonId], references: [id]) 
-
-  // Programările angajatului
-  appointments Appointment[] @relation(name: "StaffAppointments") 
-  
-  @@map("staff")
-}
-
-// 4. Modelul Programare (Booking)
-model Appointment {
-  id           String    @id @default(uuid())
-  title        String
-  start        DateTime
-  end          DateTime
-  isBlock      Boolean   @default(false)
-  
-  // Relații
-  salonId      String
-  // Legătura cu salonului
-  salon        Salon     @relation(name: "SalonAppointments", fields: [salonId], references: [id]) 
-  
-  clientId     String?
-  client       User?     @relation(fields: [clientId], references: [id])
-  
-  staffId      String
-  // Legătura cu staff-ul
-  staff        Staff     @relation(name: "StaffAppointments", fields: [staffId], references: [id]) 
-
-  review       Review? // Recenzia asociată acestei programări
-  status       AppointmentStatus @default(CONFIRMED)
-
-  @@map("appointments")
-}
-
-enum AppointmentStatus {
-  CONFIRMED
-  CANCELLED
-  COMPLETED
-}
-
-// 5. Modelul Recenzie (Review)
-model Review {
-  id            String      @id @default(uuid())
-  rating        Int         // Rating de la 1 la 5
-  comment       String?     @db.Text
-  createdAt     DateTime    @default(now())
-
-  // Relația cu Utilizatorul care a lăsat recenzia
-  userId        String
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Relația cu Salonul evaluat
-  salonId       String
-  salon         Salon       @relation(fields: [salonId], references: [id], onDelete: Cascade)
-
-  // Relația cu Programarea specifică pentru a valida recenzia
-  appointmentId String      @unique // Asigură o singură recenzie per programare
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-
-  @@map("reviews")
-}
+// ... restul modelelor (Salon, Staff, etc) ...

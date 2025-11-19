@@ -1,18 +1,21 @@
-// /src/app/profil/ProfileClientPage.jsx (COD COMPLET ACTUALIZAT CU CSS MODULES)
+// /src/app/profil/ProfileClientPage.jsx (COD COMPLET ACTUALIZAT CU ÎNCĂRCARE POZĂ)
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useToast } from '../../context/ToastContext';
-import styles from './profile.module.css'; // Importăm stilurile noi
+import styles from './profile.module.css';
+import { FaUserEdit, FaSave, FaTimes, FaCamera } from 'react-icons/fa';
 
 export default function ProfileClientPage() {
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({ name: '', email: '', phoneNumber: '', role: '' });
+  const [editedData, setEditedData] = useState({ name: '', email: '', phoneNumber: '', role: '', avatarUrl: '' });
   const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef(null); // Referință către input-ul ascuns
   const { showToast } = useToast();
 
+  // Fetch date utilizator
   React.useEffect(() => {
     async function fetchProfile() {
       try {
@@ -20,6 +23,7 @@ export default function ProfileClientPage() {
         if (response.ok) {
           const data = await response.json();
           setUserData(data);
+          // Populăm și editedData cu avatarul existent
           setEditedData(data);
         } else {
           setUserData(null);
@@ -40,7 +44,7 @@ export default function ProfileClientPage() {
 
   const handleCancelClick = () => {
     setIsEditing(false);
-    setEditedData(userData);
+    setEditedData(userData); // Resetăm la datele originale
   };
 
   const handleChange = (e) => {
@@ -49,6 +53,35 @@ export default function ProfileClientPage() {
       ...prevData,
       [name]: value,
     }));
+  };
+
+  // Gestionarea încărcării imaginii
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validare simplă mărime (max 2MB pentru base64)
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Imaginea este prea mare (max 2MB).', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        // Setăm string-ul Base64 în starea editedData
+        setEditedData((prev) => ({
+            ...prev,
+            avatarUrl: reader.result
+        }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Trigger pentru input-ul de fișier ascuns
+  const triggerFileInput = () => {
+      if (isEditing && fileInputRef.current) {
+          fileInputRef.current.click();
+      }
   };
 
   const handleSaveClick = async () => {
@@ -60,121 +93,142 @@ export default function ProfileClientPage() {
     try {
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: editedData.name,
           phoneNumber: editedData.phoneNumber,
+          avatarUrl: editedData.avatarUrl, // Trimitem și imaginea
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Eroare la actualizarea profilului');
-      }
+      if (!response.ok) throw new Error('Eroare la actualizare');
 
       const updatedUser = await response.json();
       setUserData(updatedUser);
       setIsEditing(false);
       showToast('Profil actualizat cu succes!', 'success');
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      showToast(error.message || 'Eroare la actualizarea profilului.', 'error');
+      showToast('Nu am putut actualiza profilul.', 'error');
     }
   };
 
-  if (loading) {
-    return <div className={styles.loadingContainer}>Se încarcă profilul...</div>;
-  }
-  if (!userData) {
-    return <div className={styles.errorContainer}>Nu s-au găsit date de profil. Te rugăm să te autentifici.</div>;
-  }
+  if (loading) return <div className={styles.loading}>Se încarcă datele...</div>;
+  if (!userData) return <div className={styles.error}>Nu ești autentificat.</div>;
 
   return (
-    <div className={styles.pageContainer}>
-      <div className={styles.contentWrapper}>
-        <div className={styles.profileCard}>
-          
-          {/* Header Profil */}
-          <div className={styles.header}>
+    <div className={styles.profileCard}>
+      
+      {/* Header cu Avatar */}
+      <div className={styles.header}>
+        
+        {/* Wrapper Avatar */}
+        <div className={styles.avatarWrapper} onClick={triggerFileInput}>
             <div className={styles.avatarCircle}>
-              {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
+              {editedData.avatarUrl ? (
+                  <img src={editedData.avatarUrl} alt="Avatar" className={styles.avatarImage} />
+              ) : (
+                  userData.name ? userData.name.charAt(0).toUpperCase() : 'U'
+              )}
             </div>
-            <h1 className={styles.userName}>{userData.name || 'Utilizator'}</h1>
-            <p className={styles.userEmail}>{userData.email}</p>
-          </div>
-
-          {/* Formular Detalii */}
-          <div className={styles.detailsSection}>
-            <h2 className={styles.sectionTitle}>Detalii Profil</h2>
             
-            {/* Câmp Nume */}
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="name">Nume:</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={editedData.name || ''}
-                  onChange={handleChange}
-                  className={styles.inputField}
-                />
-              ) : (
-                <p className={styles.valueText}>{userData.name}</p>
-              )}
-            </div>
-
-            {/* Câmp Email (Read-only) */}
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Email:</label>
-              <p className={styles.valueText}>{userData.email}</p>
-            </div>
-
-            {/* Câmp Telefon */}
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="phoneNumber">Număr de telefon:</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={editedData.phoneNumber || ''}
-                  onChange={handleChange}
-                  className={styles.inputField}
-                />
-              ) : (
-                <p className={styles.valueText}>{userData.phoneNumber || 'N/A'}</p>
-              )}
-            </div>
-
-            {/* Câmp Rol (Read-only) */}
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Rol:</label>
-              <p className={styles.valueText}>{userData.role}</p>
-            </div>
-
-            {/* Butoane Acțiune */}
-            <div className={styles.buttonGroup}>
-              {isEditing ? (
-                <>
-                  <button className={`${styles.btn} ${styles.saveBtn}`} onClick={handleSaveClick}>
-                    Salvează
-                  </button>
-                  <button className={`${styles.btn} ${styles.cancelBtn}`} onClick={handleCancelClick}>
-                    Anulează
-                  </button>
-                </>
-              ) : (
-                <button className={`${styles.btn} ${styles.editBtn}`} onClick={handleEditClick}>
-                  Editează Profilul
-                </button>
-              )}
-            </div>
-
-          </div> 
+            {/* Iconița de editare apare doar în modul editare */}
+            {isEditing && (
+                <div className={styles.uploadOverlay}>
+                    <FaCamera />
+                </div>
+            )}
+            
+            {/* Input ascuns pentru fișier */}
+            <input 
+                type="file" 
+                accept="image/*" 
+                ref={fileInputRef} 
+                style={{ display: 'none' }} 
+                onChange={handleImageUpload}
+            />
         </div>
+
+        <div>
+          <h1 className={styles.userName}>{userData.name || 'Utilizator'}</h1>
+          <p className={styles.userEmail}>{userData.email}</p>
+        </div>
+      </div>
+
+      {/* Formular Date */}
+      <h2 className={styles.sectionTitle}>Date Personale</h2>
+      
+      <div className={styles.formGrid}>
+        
+        {/* Nume */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Nume și Prenume</label>
+          {isEditing ? (
+            <input
+              type="text"
+              name="name"
+              value={editedData.name || ''}
+              onChange={handleChange}
+              className={styles.inputField}
+            />
+          ) : (
+            <div className={styles.valueText}>{userData.name || '-'}</div>
+          )}
+        </div>
+
+        {/* Telefon */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Număr Telefon</label>
+          {isEditing ? (
+            <input
+              type="text"
+              name="phoneNumber"
+              value={editedData.phoneNumber || ''}
+              onChange={handleChange}
+              className={styles.inputField}
+              placeholder="07xx xxx xxx"
+            />
+          ) : (
+            <div className={styles.valueText}>{userData.phoneNumber || 'Nespecificat'}</div>
+          )}
+        </div>
+
+        {/* Email (Read-only) */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Adresă Email</label>
+          <input 
+            type="text" 
+            value={userData.email} 
+            disabled 
+            className={`${styles.inputField} ${styles.readOnlyField}`} 
+          />
+        </div>
+
+        {/* Tip Cont (Read-only) */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Tip Cont</label>
+          <div className={styles.valueText} style={{ textTransform: 'capitalize' }}>
+            {userData.role?.toLowerCase()}
+          </div>
+        </div>
+
+        {/* Butoane Acțiune */}
+        <div className={styles.buttonGroup}>
+          {isEditing ? (
+            <>
+              <button className={`${styles.btn} ${styles.saveBtn}`} onClick={handleSaveClick}>
+                <FaSave /> Salvează Modificările
+              </button>
+              <button className={`${styles.btn} ${styles.cancelBtn}`} onClick={handleCancelClick}>
+                <FaTimes /> Anulează
+              </button>
+            </>
+          ) : (
+            <button className={`${styles.btn} ${styles.editBtn}`} onClick={handleEditClick}>
+              <FaUserEdit /> Editează Profilul
+            </button>
+          )}
+        </div>
+
       </div>
     </div>
   );

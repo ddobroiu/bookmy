@@ -1,7 +1,10 @@
-import { NextResponse } from 'next/server';
-import { getSession } from '../../../../lib/session';
-import prisma from '../../../../lib/prisma';
+// /src/app/api/user/profile/route.js (COD COMPLET ACTUALIZAT)
 
+import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/session';
+import prisma from '@/lib/prisma';
+
+// GET: Preluare date profil
 export async function GET() {
   const session = await getSession();
 
@@ -20,6 +23,7 @@ export async function GET() {
         email: true,
         phoneNumber: true,
         role: true,
+        avatarUrl: true, // Includem imaginea în răspuns
       },
     });
 
@@ -34,6 +38,7 @@ export async function GET() {
   }
 }
 
+// PUT: Actualizare date profil
 export async function PUT(request) {
   const session = await getSession();
 
@@ -42,7 +47,8 @@ export async function PUT(request) {
   }
 
   try {
-    const { name, phoneNumber } = await request.json();
+    // Extragem avatarUrl din body
+    const { name, phoneNumber, avatarUrl } = await request.json();
 
     if (!name || !phoneNumber) {
       return NextResponse.json({ error: 'Numele și numărul de telefon sunt obligatorii' }, { status: 400 });
@@ -55,6 +61,8 @@ export async function PUT(request) {
       data: {
         name,
         phoneNumber,
+        // Actualizăm avatarul doar dacă este trimis (poate fi null sau string Base64)
+        ...(avatarUrl !== undefined && { avatarUrl }), 
       },
       select: {
         id: true,
@@ -62,6 +70,7 @@ export async function PUT(request) {
         email: true,
         phoneNumber: true,
         role: true,
+        avatarUrl: true,
       },
     });
 

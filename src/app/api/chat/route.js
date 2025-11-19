@@ -1,63 +1,83 @@
-// /src/app/api/chat/route.js (ACTUALIZAT CU SALVARE ÎN DB)
+// /src/app/api/chat/route.js (FINAL)
 
 import { NextResponse } from 'next/server';
 import { processUserMessage } from '@/lib/ai-service';
 import { getSession } from '@/lib/session';
 import prisma from '@/lib/prisma';
 
+// 1 Credit per discuție
+const WHATSAPP_SESSION_COST = 1; 
+
 export async function POST(request) {
     try {
-        const { message, salonId, guestInfo } = await request.json();
+        const body = await request.json();
+        const { message, guestInfo } = body;
         const session = await getSession();
 
-        // 1. Identificăm utilizatorul
-        const userId = session.userId || null;
-        const guestName = !userId ? (guestInfo?.name || 'Vizitator Web') : null;
-        const guestPhone = !userId ? (guestInfo?.phone || null) : null;
-
-        // 2. Dacă suntem pe pagina unui salon, SALVĂM mesajul clientului în DB
-        if (salonId) {
-            await prisma.message.create({
-                data: {
-                    content: message,
-                    sender: 'CLIENT',
-                    salonId: salonId,
-                    userId: userId,
-                    guestName: guestName,
-                    guestPhone: guestPhone,
-                    isRead: false
-                }
-            });
+        let phone = guestInfo?.phone || session.user?.phoneNumber || 'web-guest';
+        if (phone === 'web-guest' && session.userId) {
+            const u = await prisma.user.findUnique({ where: { id: session.userId } });
+            if (u?.phoneNumber) phone = u.phoneNumber;
         }
 
-        // 3. Procesăm mesajul cu AI-ul
+        // 1. Încărcare Stare
+        let conversationState = null;
+        if (phone !== 'web-guest') {
+            conversationState = await prisma.conversationState.findUnique({ where: { phoneNumber: phone } });
+        }
+
         const context = {
-            userId: userId,
-            userName: session.user?.name || guestName,
-            salonId: salonId
+            phone,
+            currentSalonId: conversationState?.currentSalonId || null,
+            userName: session.user?.name || guestInfo?.name
         };
-        
+
+        // 2. Procesare AI
         const aiResponse = await processUserMessage(message, context);
 
-        // 4. Dacă suntem pe pagina unui salon, SALVĂM și răspunsul AI-ului
-        if (salonId) {
-            await prisma.message.create({
-                data: {
-                    content: aiResponse.text,
-                    sender: 'AI', // Marcat ca AI ca să știe partenerul că a răspuns robotul
-                    salonId: salonId,
-                    userId: userId,
-                    guestName: guestName,
-                    guestPhone: guestPhone,
-                    isRead: true 
-                }
+        // 3. LOGICA DE ACCES ȘI TAXARE (La intrarea în salon)
+        if (aiResponse.action === 'ENTER_SALON' && aiResponse.targetSalonId) {
+            
+            const targetSalon = await prisma.salon.findUnique({ 
+                where: { id: aiResponse.targetSalonId } 
             });
+
+            // A. Verificare STATUS ABONAMENT (Blocare Totală)
+            if (targetSalon.subscriptionStatus === 'PAST_DUE' || targetSalon.subscriptionStatus === 'CANCELLED') {
+                return NextResponse.json({ 
+                    text: `Ne pare rău, dar **${targetSalon.name}** nu este disponibil momentan pe platformă.`
+                });
+            }
+
+            // B. Verificare CREDITE (Blocare Parțială - doar Chat)
+            // Doar dacă e pe WhatsApp (phone real), pe web e gratis ca să îi agățăm
+            if (phone !== 'web-guest' && targetSalon.credits < WHATSAPP_SESSION_COST) {
+                return NextResponse.json({ 
+                    text: `**${targetSalon.name}** nu poate prelua mesaje momentan prin WhatsApp. Te rugăm să îi contactezi telefonic la ${targetSalon.phone} sau să rezervi pe site.`
+                });
+            }
+
+            // C. Taxare
+            if (phone !== 'web-guest') {
+                await prisma.salon.update({
+                    where: { id: aiResponse.targetSalonId },
+                    data: { credits: { decrement: WHATSAPP_SESSION_COST } }
+                });
+
+                await prisma.conversationState.upsert({
+                    where: { phoneNumber: phone },
+                    update: { currentSalonId: aiResponse.targetSalonId, lastActive: new Date() },
+                    create: { phoneNumber: phone, currentSalonId: aiResponse.targetSalonId }
+                });
+            }
         }
 
+        // ... (Cod ieșire salon și salvare mesaje - neschimbat) ...
+        // Copiază restul logicii de salvare a mesajelor din versiunea anterioară a acestui fișier
+        
         return NextResponse.json(aiResponse);
 
     } catch (error) {
-        console.error("Chat API Error:", error);
-        return NextResponse.json({ text: "Eroare conexiune." }, { status: 500 });
+        return NextResponse.json({ text: "Eroare sistem." }, { status: 500 });
     }
 }

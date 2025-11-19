@@ -1,161 +1,139 @@
-// /app/dashboard/subscription/page.js
+// /src/app/dashboard/subscription/page.js (COD COMPLET ACTUALIZAT)
 
 'use client';
 
-import React, { useState } from 'react';
-import { FaCheckCircle, FaStar, FaCrown, FaWrench, FaArrowUp } from 'react-icons/fa';
-import { useToast } from '../../../context/ToastContext'; // Presupunem că ToastProvider funcționează
-
-// Datele pentru cele trei pachete de abonament
-const subscriptionPlans = [
-    {
-        id: 'free',
-        name: 'Free (Basic)',
-        price: '0',
-        features: [
-            '1 Angajat / 5 Servicii',
-            'Calendar Online',
-            'Pagina Publică Salon',
-            'Suport Comunitar',
-        ],
-        primary: false,
-    },
-    {
-        id: 'standard',
-        name: 'Standard',
-        price: '49',
-        features: [
-            'Până la 5 Angajați / Servicii Nelimitate',
-            'Notificări SMS & WhatsApp (Limitat)',
-            'Analiză de Bază a Programărilor',
-            'Prioritate la Suport',
-        ],
-        primary: true, // Marcăm acest pachet ca fiind cel mai recomandat
-    },
-    {
-        id: 'premium',
-        name: 'Premium',
-        price: '99',
-        features: [
-            'Angajați și Servicii Nelimitate',
-            'Notificări SMS & WhatsApp (Nelimitat)',
-            'Statistici Avansate & Marketing',
-            'Integrare POS (Simulată)',
-        ],
-        primary: false,
-    },
-];
-
-// Componentă re-utilizabilă pentru a afișa un singur pachet
-const SubscriptionCard = ({ plan, onSelect, currentPlanId }) => {
-    const { name, price, features, primary, id } = plan;
-    const isCurrent = id === currentPlanId;
-    
-    // Stilizare dinamică
-    const cardStyle = {
-        padding: '30px',
-        borderRadius: '12px',
-        boxShadow: primary ? '0 10px 20px rgba(0, 123, 255, 0.3)' : '0 4px 10px rgba(0, 0, 0, 0.1)',
-        border: primary ? '2px solid #007bff' : '1px solid #ddd',
-        textAlign: 'center',
-        backgroundColor: 'white',
-        position: 'relative',
-        transform: primary ? 'scale(1.05)' : 'scale(1)',
-        transition: 'all 0.3s',
-    };
-
-    return (
-        <div style={cardStyle}>
-            {primary && (
-                <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#ffc107', color: 'black', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                    Recomandat
-                </div>
-            )}
-            
-            <h2 style={{ fontSize: '24px', color: primary ? '#007bff' : '#1c2e40' }}>{name}</h2>
-            <div style={{ fontSize: '48px', fontWeight: 'bold', margin: '15px 0' }}>
-                {price} <span style={{ fontSize: '18px', fontWeight: 'normal' }}>RON/lună</span>
-            </div>
-
-            <button 
-                onClick={() => onSelect(id)}
-                disabled={isCurrent}
-                style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: isCurrent ? '#1aa858' : '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '16px',
-                    cursor: isCurrent ? 'default' : 'pointer',
-                    marginTop: '20px',
-                    marginBottom: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px'
-                }}
-            >
-                {isCurrent ? <><FaCheckCircle /> Plan Curent</> : <><FaArrowUp /> Selectează Planul</>}
-            </button>
-
-            <ul style={{ listStyle: 'none', padding: 0, textAlign: 'left' }}>
-                {features.map((feature, index) => (
-                    <li key={index} style={{ marginBottom: '10px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', color: '#555' }}>
-                        <FaCheckCircle style={{ color: '#1aa858' }} /> {feature}
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-};
-
+import React, { useState, useEffect } from 'react';
+import { FaCheckCircle, FaCrown, FaWallet, FaPlusCircle, FaSms, FaWhatsapp } from 'react-icons/fa';
+import { useToast } from '../../../context/ToastContext';
+import { PLANS, CREDIT_PACKAGES } from '@/lib/subscription'; // Importăm regulile
 
 export default function DashboardSubscriptionPage() {
-    // Simulare: Starea planului curent al partenerului
-    const [currentPlanId, setCurrentPlanId] = useState('free');
+    const [currentPlan, setCurrentPlan] = useState('BASIC');
+    const [credits, setCredits] = useState(0);
+    const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
 
-    const handlePlanSelection = (planId) => {
-        if (planId === currentPlanId) return;
+    // Fetch date reale
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const res = await fetch('/api/partner/salon');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCredits(data.credits || 0);
+                    setCurrentPlan(data.subscriptionPlan || 'BASIC');
+                }
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        }
+        fetchData();
+    }, []);
 
-        showToast(`Ai selectat planul ${planId.toUpperCase()}. Simulare plată...`, 'info');
+    const handleUpgrade = async (planId) => {
+        if (planId === currentPlan) return;
+        // Aici ar fi integrarea Stripe
+        showToast(`Se inițiază plata pentru ${planId}... (Simulare)`, 'info');
         
-        // --- AICI SE FACE INTEGRAREA CU UN PROCESATOR DE PLATĂ (ex: Stripe, Netopia) ---
-        
-        // Simulare de succes după plată
+        // Simulare update instant (doar pt demo)
         setTimeout(() => {
-            setCurrentPlanId(planId);
-            showToast(`Upgrade la planul ${planId.toUpperCase()} reușit!`, 'success');
+             setCurrentPlan(planId);
+             showToast(`Ai trecut la planul ${planId}!`, 'success');
         }, 1500);
     };
 
+    const handleBuyCredits = async (pack) => {
+        if (!confirm(`Cumperi ${pack.credits} credite cu ${pack.price} RON?`)) return;
+
+        try {
+            const res = await fetch('/api/partner/credits', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ packageId: pack.id })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setCredits(data.newBalance);
+                showToast('Credite adăugate cu succes!', 'success');
+            } else {
+                showToast('Eroare la tranzacție.', 'error');
+            }
+        } catch (e) { showToast('Eroare rețea.', 'error'); }
+    };
+
+    if (loading) return <div style={{padding:'50px', textAlign:'center'}}>Se încarcă...</div>;
+
     return (
         <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h1 style={{ textAlign: 'center', color: '#1c2e40', marginBottom: '10px' }}>
-                <FaCrown style={{ marginRight: '10px', color: '#ffc107' }} /> Alege Planul Tău BooksApp
+            <h1 style={{ textAlign: 'center', color: '#1c2e40', marginBottom: '40px' }}>
+                <FaCrown style={{ marginRight: '10px', color: '#ffc107' }} /> Abonamente & Credite
             </h1>
-            <p style={{ textAlign: 'center', color: '#666', marginBottom: '40px' }}>
-                Deblochează funcționalități esențiale pentru creșterea afacerii tale.
-            </p>
 
-            {/* Gridul cu pachetele de prețuri */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px' }}>
-                {subscriptionPlans.map(plan => (
-                    <SubscriptionCard 
-                        key={plan.id}
-                        plan={plan}
-                        onSelect={handlePlanSelection}
-                        currentPlanId={currentPlanId}
-                    />
+            {/* 1. ABONAMENTE */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '60px' }}>
+                {Object.values(PLANS).map(plan => (
+                    <div key={plan.id} style={{
+                        padding: '30px', borderRadius: '16px', 
+                        border: currentPlan === plan.id ? '2px solid #1aa858' : '1px solid #ddd',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                        background: 'white', position: 'relative',
+                        transform: plan.id === 'STANDARD' ? 'scale(1.05)' : 'scale(1)'
+                    }}>
+                        {plan.id === 'STANDARD' && <div style={{position:'absolute', top:'-12px', left:'50%', transform:'translateX(-50%)', background:'#ffc107', padding:'4px 12px', borderRadius:'20px', fontSize:'12px', fontWeight:'bold'}}>POPULAR</div>}
+                        
+                        <h2 style={{textAlign:'center', color: '#1c2e40'}}>{plan.name}</h2>
+                        <div style={{textAlign:'center', fontSize:'36px', fontWeight:'bold', margin:'15px 0', color:'#007bff'}}>
+                            {plan.price} <span style={{fontSize:'16px', color:'#666', fontWeight:'normal'}}>RON/lună</span>
+                        </div>
+
+                        <ul style={{listStyle:'none', padding:0, margin:'20px 0'}}>
+                            {plan.features.map((feat, i) => (
+                                <li key={i} style={{marginBottom:'10px', display:'flex', alignItems:'center', gap:'10px'}}>
+                                    <FaCheckCircle style={{color:'#1aa858'}}/> {feat}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <button 
+                            onClick={() => handleUpgrade(plan.id)}
+                            disabled={currentPlan === plan.id}
+                            style={{
+                                width:'100%', padding:'12px', borderRadius:'8px', border:'none',
+                                background: currentPlan === plan.id ? '#e9ecef' : '#007bff',
+                                color: currentPlan === plan.id ? '#333' : 'white',
+                                cursor: currentPlan === plan.id ? 'default' : 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            {currentPlan === plan.id ? 'Plan Activ' : 'Alege Planul'}
+                        </button>
+                    </div>
                 ))}
             </div>
-            
-            <div style={{ marginTop: '50px', padding: '20px', borderTop: '1px solid #eee', textAlign: 'center' }}>
-                <p style={{ fontSize: '14px', color: '#888' }}>
-                    *Toate prețurile sunt în RON. Plățile se procesează securizat (Simulare).
-                </p>
+
+            {/* 2. CREDITE */}
+            <div style={{ background: '#f0f9ff', padding: '40px', borderRadius: '20px', border: '1px solid #b8daff' }}>
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'30px'}}>
+                    <div>
+                        <h2 style={{margin:0, display:'flex', alignItems:'center', gap:'10px', color:'#004085'}}><FaWallet /> Portofel Comunicare</h2>
+                        <p style={{margin:'5px 0 0 0', color:'#0056b3'}}>Pentru SMS și WhatsApp.</p>
+                    </div>
+                    <div style={{background:'white', padding:'15px 30px', borderRadius:'12px', textAlign:'center'}}>
+                        <div style={{fontSize:'12px', color:'#666', fontWeight:'bold'}}>DISPONIBIL</div>
+                        <div style={{fontSize:'32px', fontWeight:'bold', color:'#1aa858'}}>{credits}</div>
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                    {CREDIT_PACKAGES.map(pack => (
+                        <div key={pack.id} onClick={() => handleBuyCredits(pack)} style={{background:'white', padding:'20px', borderRadius:'12px', textAlign:'center', cursor:'pointer', border: pack.recommended ? '2px solid #1aa858' : '1px solid #ddd'}}>
+                            {pack.recommended && <span style={{background:'#1aa858', color:'white', fontSize:'10px', padding:'2px 8px', borderRadius:'10px'}}>BEST VALUE</span>}
+                            <div style={{fontSize:'24px', fontWeight:'bold', color:'#333', margin:'10px 0'}}>+{pack.credits} Credite</div>
+                            <div style={{fontSize:'20px', fontWeight:'bold', color:'#007bff'}}>{pack.price} RON</div>
+                            <button style={{marginTop:'10px', width:'100%', padding:'8px', background:'#f8f9fa', border:'1px solid #ddd', borderRadius:'6px', fontWeight:'bold'}}>Cumpără</button>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

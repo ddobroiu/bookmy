@@ -1,13 +1,12 @@
-// /src/app/dashboard/settings/page.js (NOU)
+// /src/app/dashboard/settings/page.js (COD COMPLET ACTUALIZAT - UI EXPLICIT)
 
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaStore, FaClock, FaImage, FaSave, FaWifi, FaParking, FaCreditCard, FaWheelchair, FaCoffee } from 'react-icons/fa';
+import { FaStore, FaClock, FaImage, FaSave, FaWifi, FaParking, FaCreditCard, FaWheelchair, FaCoffee, FaEnvelope, FaInfoCircle } from 'react-icons/fa';
 import { useToast } from '../../../context/ToastContext';
 
 const WEEK_DAYS = ['luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă', 'duminică'];
-
 const AVAILABLE_FACILITIES = [
     { id: 'wifi', label: 'Wi-Fi Gratuit', icon: FaWifi },
     { id: 'parcare', label: 'Parcare', icon: FaParking },
@@ -20,7 +19,7 @@ export default function SalonSettingsPage() {
     const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState('general'); // general, schedule, visual
+    const [activeTab, setActiveTab] = useState('general');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -29,11 +28,13 @@ export default function SalonSettingsPage() {
         description: '',
         category: '',
         coverImage: '',
+        autoApprove: true, // True = Automat, False = Manual
+        notificationEmail: '',
+        notificationPhone: '',
         schedule: {},
         facilities: []
     });
 
-    // 1. Fetch date inițiale
     useEffect(() => {
         async function loadData() {
             try {
@@ -43,7 +44,8 @@ export default function SalonSettingsPage() {
                     setFormData(prev => ({
                         ...prev,
                         ...data,
-                        // Fallback pentru schedule dacă e gol
+                        notificationEmail: data.notificationEmail || '',
+                        notificationPhone: data.notificationPhone || '',
                         schedule: data.schedule && Object.keys(data.schedule).length > 0 ? data.schedule : 
                             WEEK_DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: true, start: '09:00', end: '17:00' } }), {})
                     }));
@@ -54,7 +56,6 @@ export default function SalonSettingsPage() {
         loadData();
     }, []);
 
-    // 2. Handlers
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -108,14 +109,11 @@ export default function SalonSettingsPage() {
         }
     };
 
-    // --- Stiluri ---
     const tabStyle = (tab) => ({
-        padding: '10px 20px',
-        cursor: 'pointer',
+        padding: '10px 20px', cursor: 'pointer',
         borderBottom: activeTab === tab ? '2px solid #007bff' : '2px solid transparent',
         color: activeTab === tab ? '#007bff' : '#666',
-        fontWeight: '600',
-        display: 'flex', alignItems: 'center', gap: '8px'
+        fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px'
     });
 
     if (loading) return <div style={{padding:'40px', textAlign:'center'}}>Se încarcă setările...</div>;
@@ -133,7 +131,6 @@ export default function SalonSettingsPage() {
                 </button>
             </div>
 
-            {/* Tabs Navigation */}
             <div style={{ display: 'flex', borderBottom: '1px solid #ddd', marginBottom: '30px' }}>
                 <div onClick={() => setActiveTab('general')} style={tabStyle('general')}><FaStore /> General</div>
                 <div onClick={() => setActiveTab('schedule')} style={tabStyle('schedule')}><FaClock /> Program</div>
@@ -142,7 +139,6 @@ export default function SalonSettingsPage() {
 
             <div style={{ background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                 
-                {/* TAB 1: GENERAL */}
                 {activeTab === 'general' && (
                     <div style={{display:'flex', flexDirection:'column', gap:'20px'}}>
                         <div>
@@ -154,20 +150,58 @@ export default function SalonSettingsPage() {
                             <input type="text" name="address" value={formData.address} onChange={handleChange} style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
                         </div>
                         <div>
-                            <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Telefon Contact</label>
+                            <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Telefon Public</label>
                             <input type="text" name="phone" value={formData.phone || ''} onChange={handleChange} placeholder="07xx xxx xxx" style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
                         </div>
                         <div>
                             <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Descriere (Despre noi)</label>
                             <textarea name="description" value={formData.description || ''} onChange={handleChange} rows="5" style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
                         </div>
+
+                        {/* --- CONTACT INTERN RECEPȚIE --- */}
+                        <div style={{ marginTop: '10px', padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #eee' }}>
+                            <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#007bff', marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <FaEnvelope /> Date Contact Recepție (Intern)
+                            </h3>
+                            <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
+                                Aceste date sunt folosite pentru a primi notificări centralizate. Dacă un angajat e setat pe "Contact Recepție", aici vor ajunge mailurile lui.
+                            </p>
+                            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+                                <div>
+                                    <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Email Notificări</label>
+                                    <input type="email" name="notificationEmail" value={formData.notificationEmail} onChange={handleChange} placeholder="receptie@salon.ro" style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
+                                </div>
+                                <div>
+                                    <label style={{fontWeight:'600', display:'block', marginBottom:'5px'}}>Telefon Notificări</label>
+                                    <input type="text" name="notificationPhone" value={formData.notificationPhone} onChange={handleChange} placeholder="07xx (pt SMS)" style={{width:'100%', padding:'10px', border:'1px solid #ddd', borderRadius:'6px'}} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* --- ZONA APROBARE GLOBALĂ --- */}
+                        <div style={{ marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', border: '1px solid #ffeeba' }}>
+                            <h3 style={{ fontSize: '16px', marginBottom: '10px', color: '#856404', marginTop: 0 }}>Regulă Globală: Aprobare Manuală</h3>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', color: '#856404' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={!formData.autoApprove} 
+                                    onChange={(e) => setFormData(prev => ({ ...prev, autoApprove: !e.target.checked }))}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Forțează aprobarea manuală pentru TOATE serviciile
+                            </label>
+                            <p style={{ margin: '5px 0 0 28px', fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
+                                <FaInfoCircle style={{fontSize:'11px', marginRight:'5px'}}/>
+                                <strong>Dacă bifezi:</strong> Orice programare va fi "În Așteptare" până o aprobi tu.<br/>
+                                <strong>Dacă NU bifezi:</strong> Programările se confirmă automat, <em>cu excepția serviciilor unde ai specificat altfel</em>.
+                            </p>
+                        </div>
                     </div>
                 )}
 
-                {/* TAB 2: PROGRAM */}
                 {activeTab === 'schedule' && (
                     <div>
-                        <p style={{marginBottom:'20px', color:'#666'}}>Definește programul general de funcționare al afacerii.</p>
+                        <p style={{marginBottom:'20px', color:'#666'}}>Programul general de deschidere (Recepție).</p>
                         {WEEK_DAYS.map(day => {
                             const isOpen = formData.schedule[day]?.open;
                             return (
@@ -190,7 +224,6 @@ export default function SalonSettingsPage() {
                     </div>
                 )}
 
-                {/* TAB 3: VIZUAL & FACILITĂȚI */}
                 {activeTab === 'visual' && (
                     <div>
                         <div style={{marginBottom:'30px'}}>
@@ -206,12 +239,8 @@ export default function SalonSettingsPage() {
                                     onChange={handleImageUpload} 
                                     style={{position:'absolute', top:0, left:0, width:'100%', height:'100%', opacity:0, cursor:'pointer'}} 
                                 />
-                                <div style={{position:'absolute', bottom:'10px', right:'10px', background:'rgba(0,0,0,0.6)', color:'white', padding:'5px 10px', borderRadius:'5px', fontSize:'12px', pointerEvents:'none'}}>
-                                    Click pentru a schimba
-                                </div>
                             </div>
                         </div>
-
                         <div>
                             <h3 style={{fontSize:'16px', marginBottom:'15px'}}>Facilități</h3>
                             <div style={{display:'flex', flexWrap:'wrap', gap:'15px'}}>
@@ -223,13 +252,11 @@ export default function SalonSettingsPage() {
                                             key={fac.id} 
                                             onClick={() => toggleFacility(fac.id)}
                                             style={{
-                                                padding:'10px 15px', 
-                                                borderRadius:'8px', 
+                                                padding:'10px 15px', borderRadius:'8px', 
                                                 border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
                                                 backgroundColor: isSelected ? '#e6f0ff' : 'white',
                                                 color: isSelected ? '#007bff' : '#555',
-                                                cursor:'pointer',
-                                                display:'flex', alignItems:'center', gap:'8px', fontWeight:'600'
+                                                cursor:'pointer', display:'flex', alignItems:'center', gap:'8px', fontWeight:'600'
                                             }}
                                         >
                                             <Icon /> {fac.label}

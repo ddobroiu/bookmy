@@ -1,43 +1,47 @@
-// /src/app/api/salon/route.js (ACTUALIZAT)
+// /src/app/api/partner/salon/route.js
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
 
-export async function GET(request) {
-    const { searchParams } = new URL(request.url);
-    const slug = searchParams.get('slug');
+export async function GET() {
+  const session = await getSession();
+  if (!session?.userId || session.role !== 'PARTNER') return NextResponse.json({ error: 'Neautorizat' }, { status: 401 });
 
-    if (!slug) return NextResponse.json({ message: "Missing slug" }, { status: 400 });
+  try {
+    const salon = await prisma.salon.findFirst({ where: { ownerId: session.userId } });
+    if (!salon) return NextResponse.json({ error: 'Inexistent' }, { status: 404 });
+    return NextResponse.json({
+        ...salon,
+        schedule: salon.scheduleJson ? JSON.parse(salon.scheduleJson) : {},
+        facilities: salon.facilities ? JSON.parse(JSON.stringify(salon.facilities)) : []
+    });
+  } catch (error) { return NextResponse.json({ error: 'Eroare' }, { status: 500 }); }
+}
 
-    try {
-        const salon = await prisma.salon.findUnique({
-            where: { slug: slug },
-            include: {
-                // AICI ADUCEM DATELE REALE
-                services: {
-                    orderBy: { price: 'asc' }
-                },
-                // Putem aduce și câteva imagini pentru galerie
-                portfolioItems: {
-                    take: 6,
-                    orderBy: { createdAt: 'desc' }
-                }
-            }
-        });
-        
-        if (!salon) return NextResponse.json({ message: "Not found" }, { status: 404 });
+export async function PUT(request) {
+  const session = await getSession();
+  if (!session?.userId || session.role !== 'PARTNER') return NextResponse.json({ error: 'Neautorizat' }, { status: 401 });
 
-        const salonData = {
-            ...salon,
-            schedule: JSON.parse(salon.scheduleJson || '{}'),
-            // Dacă nu are imagini, punem unele fake pentru design
-            portfolioItems: salon.portfolioItems.length > 0 ? salon.portfolioItems : [] 
-        };
-        delete salonData.scheduleJson;
+  const body = await request.json();
+  const { name, address, phone, description, category, schedule, coverImage, facilities, autoApprove, notificationEmail, notificationPhone } = body;
 
-        return NextResponse.json(salonData);
+  try {
+    const existingSalon = await prisma.salon.findFirst({ where: { ownerId: session.userId } });
+    if (!existingSalon) return NextResponse.json({ error: 'Salon inexistent' }, { status: 404 });
 
-    } catch (error) {
-        return NextResponse.json({ message: "Server Error" }, { status: 500 });
-    }
+    const updatedSalon = await prisma.salon.update({
+      where: { id: existingSalon.id },
+      data: {
+        name, address, phone, description, category, coverImage,
+        scheduleJson: JSON.stringify(schedule),
+        facilities: facilities,
+        autoApprove: autoApprove,
+        // Salvăm noile câmpuri
+        notificationEmail: notificationEmail,
+        notificationPhone: notificationPhone
+      }
+    });
+    return NextResponse.json(updatedSalon);
+  } catch (error) { return NextResponse.json({ error: 'Eroare actualizare' }, { status: 500 }); }
 }

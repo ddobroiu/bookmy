@@ -2,7 +2,7 @@
 
 import { getIronSession, IronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import { Role } from '@prisma/client/$Enums';
+type Role = 'CLIENT' | 'PARTNER';
 import { PrismaClient } from '@prisma/client';
 import { SESSION_COOKIE_NAME } from '@/config';
 

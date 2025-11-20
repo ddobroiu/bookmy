@@ -2,7 +2,7 @@
 
 import { getIronSession, IronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import { Role } from '@prisma/client';
+import { Role } from '@/generated/prisma/enums';
 import { SESSION_COOKIE_NAME } from '@/config';
 
 // Fallback pentru secret în development, ca să nu crape dacă lipsește din .env

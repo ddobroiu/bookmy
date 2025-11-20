@@ -1,0 +1,23 @@
+/* Reviews styles placeholder. Add your custom styles here. */
+
+.stars {
+  display: flex;
+  gap: 4px;
+}
+
+.star {
+  color: #ffc107;
+  font-size: 1.5rem;
+}
+
+.reviewContainer {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.reviewText {
+  font-size: 1rem;
+  color: #333;
+}

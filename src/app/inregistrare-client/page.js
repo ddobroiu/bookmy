@@ -10,7 +10,7 @@ export default function RegisterClientPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   // ROLUL ESTE SETAT AUTOMAT LA 'client'
-  const role = 'client'; 
+  const role = 'CLIENT'; 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 

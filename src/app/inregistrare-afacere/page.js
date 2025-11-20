@@ -9,7 +9,7 @@ export default function RegisterPartnerPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   // ROLUL ESTE SETAT AUTOMAT LA 'PARTENER' (majuscule pentru backend)
-  const role = 'PARTENER'; 
+  const role = 'PARTNER'; 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 

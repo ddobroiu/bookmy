@@ -79,11 +79,12 @@ export async function POST(request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn('Validation error during registration:', error.errors);
-      return NextResponse.json({ message: error.errors[0].message }, { status: 400 });
+      const firstError = error.errors && error.errors.length > 0 ? error.errors[0].message : 'Datele introduse nu sunt valide.';
+      return NextResponse.json({ message: firstError }, { status: 400 });
     }
     logger.error('Registration Error:', error);
     // Verificăm dacă este o eroare cunoscută de la Prisma
-    if (error.code) { // Prisma errors have codes
+    if (error && error.code) { // Prisma errors have codes
         return NextResponse.json({ message: `Eroare la scrierea în baza de date: ${error.message}` }, { status: 500 });
     }
     return NextResponse.json({ message: 'Eroare internă de server la înregistrare.' }, { status: 500 });
